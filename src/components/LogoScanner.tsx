@@ -14,8 +14,13 @@ import {
 } from 'react-native-vision-camera';
 import { detectLogos, Logo } from '../services/visionApi';
 import RNFS from 'react-native-fs';
+import { product } from '../assets/data/arrays/data';
 
-export default function LogoScanner() {
+interface LogoScannerProps {
+  navigation?: any;
+}
+
+export default function LogoScanner({ navigation }: LogoScannerProps) {
   const [hasPermission, setHasPermission] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [isScanningActive, setIsScanningActive] = useState(false);
@@ -101,6 +106,21 @@ export default function LogoScanner() {
       if (logos.length > 0) {
         setDetectedLogos(logos);
         setScanStatus(`Found ${logos.length} logo(s)!`);
+        
+        // Check if Nike logo is detected and navigate
+        const nikeDetected = logos.find(logo => 
+          logo.description.toLowerCase().includes('nike')
+        );
+        
+        if (nikeDetected && navigation) {
+          // Stop scanning before navigating
+          stopScanning();
+          // Navigate to product details
+          navigation.navigate('ProductDetails', {
+            brand: 'Nike',
+            products: product.nike,
+          });
+        }
       } else {
         setDetectedLogos([]);
         setScanStatus('No logos detected - keep scanning...');
@@ -195,14 +215,33 @@ export default function LogoScanner() {
         <View style={styles.resultsContainer}>
           <ScrollView style={styles.resultsScroll}>
             <Text style={styles.resultsTitle}>✓ Detected Logos:</Text>
-            {detectedLogos.map((logo, index) => (
-              <View key={index} style={styles.logoItem}>
-                <Text style={styles.logoDescription}>{logo.description}</Text>
-                <Text style={styles.logoScore}>
-                  {(logo.score * 100).toFixed(1)}% confident
-                </Text>
-              </View>
-            ))}
+            {detectedLogos.map((logo, index) => {
+              const isNike = logo.description.toLowerCase().includes('nike');
+              return (
+                <View key={index} style={styles.logoItem}>
+                  <View style={styles.logoInfo}>
+                    <Text style={styles.logoDescription}>{logo.description}</Text>
+                    <Text style={styles.logoScore}>
+                      {(logo.score * 100).toFixed(1)}% confident
+                    </Text>
+                  </View>
+                  {isNike && navigation && (
+                    <TouchableOpacity
+                      style={styles.viewProductsButton}
+                      onPress={() => {
+                        stopScanning();
+                        navigation.navigate('ProductDetails', {
+                          brand: 'Nike',
+                          products: product.nike,
+                        });
+                      }}
+                    >
+                      <Text style={styles.viewProductsText}>View Products →</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              );
+            })}
           </ScrollView>
         </View>
       )}
@@ -327,9 +366,12 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
+  },
+  logoInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 8,
   },
   logoDescription: {
     color: '#fff',
@@ -339,6 +381,19 @@ const styles = StyleSheet.create({
   },
   logoScore: {
     color: '#34C759',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  viewProductsButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  viewProductsText: {
+    color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },
