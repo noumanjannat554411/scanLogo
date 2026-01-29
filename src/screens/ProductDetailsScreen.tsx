@@ -176,7 +176,7 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                         data={products}
                         renderItem={({ item: product, index }: { item: Product; index: number }) => (
                             <TouchableOpacity
-                                style={[styles.carouselCard, {backgroundColor:"red", right: currentIndex === index + 1 ? scale(-20) : currentIndex === index - 1 ? scale(-20) : currentIndex === index ? scale(-20) : 0 }]}
+                                style={[styles.carouselCard, { right: currentIndex === index + 1 ? scale(-20) : currentIndex === index - 1 ? scale(-20) : currentIndex === index ? scale(-20) : 0 }]}
                                 onPress={() => handleProductPress(product)}
                                 activeOpacity={0.95}
                             >
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         height: scale(395),
-        width: scale(270)
+        width: scale(280)
     },
     productCard: {
         width: '100%',
