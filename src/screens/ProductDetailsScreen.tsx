@@ -12,7 +12,7 @@ import {
     Platform,
     ImageBackground,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Carousel from 'react-native-snap-carousel';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -34,14 +34,13 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
         // Navigate to the full detail screen
         navigation.navigate('ProductDetailFull', { product });
     };
-
+    const insets = useSafeAreaInsets();
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#000" />
-
-            {/* Header */}
-            <SafeAreaView edges={['top']} style={styles.safeArea}>
-                <View style={styles.header}>
+        <ImageBackground source={images.homeBg} imageStyle={[styles.container, { opacity: 1 }]} style={styles.container} resizeMode='cover'>
+            <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+                {/* Header */}
+                {/* < edges={['top']} style={styles.safeArea}> */}
+                <View style={[styles.header, { paddingTop: insets.top }]}>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Image source={images.menu} style={{ width: scale(24), height: scale(24), tintColor: '#fff', resizeMode: "contain" }} />
                     </TouchableOpacity>
@@ -55,91 +54,92 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                         </TouchableOpacity>
                     </View>
                 </View>
-            </SafeAreaView>
+                {/* </SafeAreaView> */}
 
-            {/* Product List/Carousel View - 3D Coverflow Effect */}
-            <View style={styles.listView}>
-                <Carousel
-                    ref={carouselRef}
-                    data={products}
-                    renderItem={({ item: product, index }: { item: Product; index: number }) => {
-                        const isActive = index === currentIndex;
-                        return (
-                            <TouchableOpacity
-                                style={[
-                                    styles.carouselCard,
-                                    {
-                                        right: currentIndex === index + 1 || currentIndex === index + 2 ? scale(-20) : currentIndex === index - 1 ? scale(-20) : currentIndex === index ? scale(-20) : 0,
-                                        height: isActive ? scale(395) : scale(320),
-                                    }
-                                ]}
-                                onPress={() => handleProductPress(product)}
-                                activeOpacity={0.95}
-                            >
-                                <ImageBackground
-                                    source={images.backgroundImage}
-                                    resizeMode='stretch'
+                {/* Product List/Carousel View - 3D Coverflow Effect */}
+                <View style={styles.listView}>
+                    <Carousel
+                        ref={carouselRef}
+                        data={products}
+                        renderItem={({ item: product, index }: { item: Product; index: number }) => {
+                            const isActive = index === currentIndex;
+                            return (
+                                <TouchableOpacity
                                     style={[
-                                        styles.productCard,
-                                        styles.productCardActive,
+                                        styles.carouselCard,
                                         {
-                                            height: isActive ? scale(273) : scale(220),
+                                            right: currentIndex === index + 1 || currentIndex === index + 2 ? scale(-20) : currentIndex === index - 1 ? scale(-20) : currentIndex === index ? scale(-20) : 0,
+                                            height: isActive ? scale(395) : scale(320),
                                         }
                                     ]}
+                                    onPress={() => handleProductPress(product)}
+                                    activeOpacity={0.95}
                                 >
-                                    {/* Product Image */}
-                                    <Image
-                                        source={product.image}
+                                    <ImageBackground
+                                        source={images.backgroundImage}
+                                        resizeMode='stretch'
                                         style={[
-                                            styles.cardProductImage,
+                                            styles.productCard,
+                                            styles.productCardActive,
                                             {
-                                                width: isActive ? scale(300) : scale(240),
-                                                height: isActive ? scale(169) : scale(135),
-                                                top: isActive ? scale(-60) : scale(-48),
-                                                left: isActive ? scale(-20) : scale(-16),
+                                                height: isActive ? scale(273) : scale(220),
                                             }
                                         ]}
-                                        resizeMode="contain"
-                                    />
+                                    >
+                                        {/* Product Image */}
+                                        <Image
+                                            source={product.image}
+                                            style={[
+                                                styles.cardProductImage,
+                                                {
+                                                    width: isActive ? scale(300) : scale(240),
+                                                    height: isActive ? scale(169) : scale(135),
+                                                    top: isActive ? scale(-60) : scale(-48),
+                                                    left: isActive ? scale(-20) : scale(-16),
+                                                }
+                                            ]}
+                                            resizeMode="contain"
+                                        />
 
-                                    {/* Product Info */}
-                                    <View style={[styles.cardContent, { top: isActive ? scale(-10) : scale(-5) }]}>
-                                        <Text numberOfLines={1} style={[styles.productTitle, { fontSize: isActive ? scale(21) : scale(16) }]}>
-                                            {product.title}
-                                        </Text>
-                                        <Text style={[styles.productCategory, { fontSize: isActive ? scale(17) : scale(13) }]}>
-                                            {product.type}
-                                        </Text>
-                                        <Text style={[styles.priceTag, { fontSize: isActive ? scale(26) : scale(20) }]}>
-                                            {product.price}
-                                        </Text>
-                                    </View>
-                                </ImageBackground>
-                            </TouchableOpacity>
-                        );
-                    }}
-                    sliderWidth={width}
-                    itemWidth={width * 0.7}
-                    onSnapToItem={(index: number) => setCurrentIndex(index)}
-                    inactiveSlideScale={0.88}
-                    inactiveSlideOpacity={1}
-                    activeSlideAlignment="center"
-                    containerCustomStyle={styles.carouselContainerCustom}
-                    contentContainerCustomStyle={styles.carouselContentContainer}
-                    loop={false}
-                    enableMomentum={false}
-                    decelerationRate={0.9}
-                    useScrollView={true}
-                />
+                                        {/* Product Info */}
+                                        <View style={[styles.cardContent, { top: isActive ? scale(-10) : scale(-5) }]}>
+                                            <Text numberOfLines={1} style={[styles.productTitle, { fontSize: isActive ? scale(21) : scale(16) }]}>
+                                                {product.title}
+                                            </Text>
+                                            <Text style={[styles.productCategory, { fontSize: isActive ? scale(17) : scale(13) }]}>
+                                                {product.type}
+                                            </Text>
+                                            <Text style={[styles.priceTag, { fontSize: isActive ? scale(26) : scale(20) }]}>
+                                                {product.price}
+                                            </Text>
+                                        </View>
+                                    </ImageBackground>
+                                </TouchableOpacity>
+                            );
+                        }}
+                        sliderWidth={width}
+                        itemWidth={width * 0.7}
+                        onSnapToItem={(index: number) => setCurrentIndex(index)}
+                        inactiveSlideScale={0.88}
+                        inactiveSlideOpacity={1}
+                        activeSlideAlignment="center"
+                        containerCustomStyle={styles.carouselContainerCustom}
+                        contentContainerCustomStyle={styles.carouselContentContainer}
+                        loop={false}
+                        enableMomentum={false}
+                        decelerationRate={0.9}
+                        useScrollView={true}
+                    />
+                </View>
             </View>
-        </View>
+        </ImageBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+
     },
     safeArea: {
         backgroundColor: '#1a1a1a',
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 12,
-        backgroundColor: '#000',
+        backgroundColor: 'transparent',
     },
     menuIcon: {
         fontSize: 28,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     // List View (Screen 1)
     listView: {
         flex: 1,
-        backgroundColor: '#000',
+        backgroundColor: 'transparent',
     },
     homeScreenLabel: {
         fontSize: 14,
@@ -248,8 +248,9 @@ const styles = StyleSheet.create({
         // justifyContent: 'flex-end',
     },
     cardContent: {
-        paddingHorizontal: scale(13),
+        paddingHorizontal: scale(20),
         top: scale(-10)
+
     },
     productTitle: {
         fontSize: scale(21),

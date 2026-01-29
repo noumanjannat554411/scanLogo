@@ -14,4 +14,5 @@ export const images = {
     box: require('./box.png'),
     tabler_cube: require('./tabler_cube.png'),
     splashBg: require('./splashBg.png'),
+    homeBg: require('./homeBg.png'),
 }

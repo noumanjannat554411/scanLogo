@@ -32,10 +32,13 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
   const [detectedLogos, setDetectedLogos] = useState<Logo[]>([]);
   const [scanStatus, setScanStatus] = useState<string>('Tap to start scanning');
   const [scanProgress, setScanProgress] = useState(0);
+  const [scanAttempts, setScanAttempts] = useState(0);
   
   const cameraRef = useRef<Camera>(null);
-  const scanIntervalRef = useRef<number | null>(null);
   const lastScanTimeRef = useRef<number>(0);
+  const isProcessingRef = useRef<boolean>(false);
+  const scanAttemptsRef = useRef<number>(0);
+  const isScanningActiveRef = useRef<boolean>(false);
   const device = useCameraDevice('back');
   const { hasPermission: cameraPermission, requestPermission } = useCameraPermission();
 
@@ -47,7 +50,9 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
   useEffect(() => {
     checkPermissions();
     return () => {
-      stopScanning();
+      setIsScanningActive(false);
+      isScanningActiveRef.current = false;
+      isProcessingRef.current = false;
     };
   }, []);
 
@@ -117,40 +122,68 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
   };
 
   const startScanning = () => {
+    console.log('🚀 Starting scan...');
     setIsScanningActive(true);
-    setScanStatus('Scanning for logos...');
+    isScanningActiveRef.current = true;
+    setIsScanning(true);
+    setScanStatus('🔍 Scanning for logos...');
     setDetectedLogos([]);
     setScanProgress(0);
+    setScanAttempts(0);
+    scanAttemptsRef.current = 0;
+    isProcessingRef.current = false;
     
-    scanIntervalRef.current = setInterval(() => {
+    // Use setTimeout to ensure state updates before first scan
+    setTimeout(() => {
+      console.log('📸 Starting first scan attempt...');
       scanCurrentFrame();
-    }, 2000) as unknown as number;
+    }, 100);
   };
 
   const stopScanning = () => {
+    console.log('🛑 Stopping scan...');
     setIsScanningActive(false);
+    isScanningActiveRef.current = false;
+    setIsScanning(false);
     setScanStatus('Tap to start scanning');
     setScanProgress(0);
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-      scanIntervalRef.current = null;
-    }
+    setScanAttempts(0);
+    scanAttemptsRef.current = 0;
+    isProcessingRef.current = false;
   };
 
   const scanCurrentFrame = async () => {
-    if (!cameraRef.current || isScanning) {
+    console.log('🔍 scanCurrentFrame called', {
+      hasCamera: !!cameraRef.current,
+      isProcessing: isProcessingRef.current,
+      isScanningActive: isScanningActiveRef.current,
+      scanAttempts: scanAttemptsRef.current
+    });
+    
+    // Check if already processing or scanning is not active
+    if (!cameraRef.current || isProcessingRef.current || !isScanningActiveRef.current) {
+      console.log('❌ Scan blocked:', {
+        noCamera: !cameraRef.current,
+        isProcessing: isProcessingRef.current,
+        notActive: !isScanningActiveRef.current
+      });
       return;
     }
 
-    const now = Date.now();
-    if (now - lastScanTimeRef.current < 1500) {
+    // Check if we've reached max attempts
+    if (scanAttemptsRef.current >= 4) {
+      setScanStatus('❌ No logo detected after 4 attempts');
+      stopScanning();
       return;
     }
-    lastScanTimeRef.current = now;
 
     try {
-      setIsScanning(true);
-      setScanStatus('🔍 Analyzing frame...');
+      isProcessingRef.current = true;
+      scanAttemptsRef.current += 1;
+      setScanAttempts(scanAttemptsRef.current);
+      
+      console.log(`📸 Taking photo (Attempt ${scanAttemptsRef.current}/4)...`);
+      setScanStatus(`🔍 Analyzing frame (Attempt ${scanAttemptsRef.current}/4)...`);
       setScanProgress(0.3);
 
       const photo = await cameraRef.current.takePhoto({
@@ -158,26 +191,33 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
         enableShutterSound: false,
       });
 
+      console.log('📷 Photo taken:', photo.path);
       setScanProgress(0.5);
       setScanStatus('📡 Processing with AI...');
 
       const base64Image = await photoToBase64(photo.path);
+      console.log('📝 Image converted to base64, length:', base64Image.length);
 
+      // Clean up photo immediately
       try {
         await RNFS.unlink(photo.path);
       } catch (e) {
-        // Ignore
+        // Ignore cleanup errors
       }
 
       setScanProgress(0.8);
       const logos = await detectLogos(base64Image);
 
+      console.log('🎯 Logo detection result:', logos.length, 'logos found');
       setScanProgress(1);
 
       if (logos.length > 0) {
+        // Logo detected! Stop scanning
+        console.log('✅ Logos detected:', logos);
         setDetectedLogos(logos);
         setScanStatus(`✅ Found ${logos.length} logo(s)!`);
         startGlowAnimation();
+        isProcessingRef.current = false;
         
         const nikeDetected = logos.find(logo => 
           logo.description.toLowerCase().includes('nike')
@@ -190,18 +230,47 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
               brand: 'Nike',
               products: product.nike,
             });
-          }, 1500);
+          }, 1000);
+        } else {
+          stopScanning();
         }
       } else {
-        setDetectedLogos([]);
-        setScanStatus('🔍 Keep scanning...');
+        // No logo detected, check if we should continue
+        if (scanAttemptsRef.current < 4 && isScanningActiveRef.current) {
+          setScanStatus(`⏳ No logo found. Trying again (${scanAttemptsRef.current}/4)...`);
+          setScanProgress(0);
+          
+          // Mark as not processing so next scan can start
+          isProcessingRef.current = false;
+          
+          // Wait 1 second before next attempt
+          setTimeout(() => {
+            if (isScanningActiveRef.current) {
+              scanCurrentFrame();
+            }
+          }, 1000);
+        } else {
+          setScanStatus('❌ No logo detected after 4 attempts');
+          stopScanning();
+        }
       }
     } catch (error) {
-      console.error('Error scanning logo:', error);
-      setScanStatus('⚠️ Error - retrying...');
-    } finally {
-      setIsScanning(false);
+      console.error('Scan error:', error);
+      setScanStatus('⚠️ Error during scanning');
       setScanProgress(0);
+      
+      // Mark as not processing and try again if under limit
+      isProcessingRef.current = false;
+      
+      if (scanAttemptsRef.current < 4 && isScanningActiveRef.current) {
+        setTimeout(() => {
+          if (isScanningActiveRef.current) {
+            scanCurrentFrame();
+          }
+        }, 1000);
+      } else {
+        stopScanning();
+      }
     }
   };
 

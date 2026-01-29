@@ -16,6 +16,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, Product } from '../types/navigation';
 import { images } from '../assets/images/images';
 import { scale } from '../utils/functions';
+import LinearGradient from 'react-native-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
@@ -155,12 +156,20 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                         </View>
 
                         {/* View in 3D Button */}
+
                         <TouchableOpacity
                             style={styles.view3DButton}
                             onPress={handleViewIn3D}
                         >
-                            <Image source={images.box} style={styles.cubeIcon} />
-                            <Text style={styles.view3DText}>View in 3D</Text>
+                            <LinearGradient
+                                colors={['#FF6200', '#FFC082', '#FF6200']}
+                                style={StyleSheet.absoluteFill}
+                            >
+                                <View style={{ alignItems: "center", justifyContent: "center", flex: 1, flexDirection: "row", gap: scale(12) }}>
+                                    <Image source={images.box} style={styles.cubeIcon} />
+                                    <Text style={styles.view3DText}>View in 3D</Text>
+                                </View>
+                            </LinearGradient>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -359,7 +368,7 @@ const styles = StyleSheet.create({
     view3DButton: {
         flexDirection: 'row',
         backgroundColor: '#FF6B35',
-        borderRadius: 14,
+        borderRadius: scale(14),
         alignItems: 'center',
         justifyContent: 'center',
         gap: 12,
@@ -368,9 +377,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 8,
         elevation: 2,
-        width:scale(200),
+        width: scale(200),
         height: scale(50),
         alignSelf: 'center',
+        overflow: 'hidden',
     },
     cubeIcon: {
         height: scale(22),
