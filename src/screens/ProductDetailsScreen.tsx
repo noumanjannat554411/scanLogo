@@ -62,33 +62,62 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                 <Carousel
                     ref={carouselRef}
                     data={products}
-                    renderItem={({ item: product, index }: { item: Product; index: number }) => (
-                        <TouchableOpacity
-                            style={[styles.carouselCard, { right: currentIndex === index + 1 || currentIndex === index + 2 ? scale(-20) : currentIndex === index - 1 ? scale(-20) : currentIndex === index ? scale(-20) : 0 }]}
-                            onPress={() => handleProductPress(product)}
-                            activeOpacity={0.95}
-                        >
-                            <ImageBackground source={images.backgroundImage} resizeMode='stretch' style={[
-                                styles.productCard, styles.productCardActive
-                            ]}>
-                                {/* Product Image */}
-                                <Image
-                                    source={product.image}
-                                    style={styles.cardProductImage}
-                                    resizeMode="contain"
-                                />
+                    renderItem={({ item: product, index }: { item: Product; index: number }) => {
+                        const isActive = index === currentIndex;
+                        return (
+                            <TouchableOpacity
+                                style={[
+                                    styles.carouselCard,
+                                    {
+                                        right: currentIndex === index + 1 || currentIndex === index + 2 ? scale(-20) : currentIndex === index - 1 ? scale(-20) : currentIndex === index ? scale(-20) : 0,
+                                        height: isActive ? scale(395) : scale(320),
+                                    }
+                                ]}
+                                onPress={() => handleProductPress(product)}
+                                activeOpacity={0.95}
+                            >
+                                <ImageBackground
+                                    source={images.backgroundImage}
+                                    resizeMode='stretch'
+                                    style={[
+                                        styles.productCard,
+                                        styles.productCardActive,
+                                        {
+                                            height: isActive ? scale(273) : scale(220),
+                                        }
+                                    ]}
+                                >
+                                    {/* Product Image */}
+                                    <Image
+                                        source={product.image}
+                                        style={[
+                                            styles.cardProductImage,
+                                            {
+                                                width: isActive ? scale(300) : scale(240),
+                                                height: isActive ? scale(169) : scale(135),
+                                                top: isActive ? scale(-60) : scale(-48),
+                                                left: isActive ? scale(-20) : scale(-16),
+                                            }
+                                        ]}
+                                        resizeMode="contain"
+                                    />
 
-                                {/* Product Info */}
-                                <View style={styles.cardContent}>
-                                    <Text numberOfLines={1} style={[styles.productTitle, { fontSize: index === currentIndex ? scale(21) : scale(12.64) }]}>{product.title}</Text>
-                                    <Text style={[styles.productCategory, { fontSize: index === currentIndex ? scale(17) : scale(10) }]}>{product.type}</Text>
-                                    <Text style={[styles.priceTag, { fontSize: index === currentIndex ? scale(26) : scale(15.4) }]}>{product.price}</Text>
-                                </View>
-
-
-                            </ImageBackground>
-                        </TouchableOpacity>
-                    )}
+                                    {/* Product Info */}
+                                    <View style={[styles.cardContent, { top: isActive ? scale(-10) : scale(-5) }]}>
+                                        <Text numberOfLines={1} style={[styles.productTitle, { fontSize: isActive ? scale(21) : scale(16) }]}>
+                                            {product.title}
+                                        </Text>
+                                        <Text style={[styles.productCategory, { fontSize: isActive ? scale(17) : scale(13) }]}>
+                                            {product.type}
+                                        </Text>
+                                        <Text style={[styles.priceTag, { fontSize: isActive ? scale(26) : scale(20) }]}>
+                                            {product.price}
+                                        </Text>
+                                    </View>
+                                </ImageBackground>
+                            </TouchableOpacity>
+                        );
+                    }}
                     sliderWidth={width}
                     itemWidth={width * 0.7}
                     onSnapToItem={(index: number) => setCurrentIndex(index)}
