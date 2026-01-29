@@ -181,8 +181,7 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                                 activeOpacity={0.95}
                             >
                                 <View style={[
-                                    styles.productCard,
-                                    currentIndex === index && styles.productCardActive
+                                    styles.productCard, styles.productCardActive
                                 ]}>
                                     {/* Product Image */}
                                     <Image
@@ -289,7 +288,7 @@ const styles = StyleSheet.create({
     // List View (Screen 1)
     listView: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: '#000',
     },
     homeScreenLabel: {
         fontSize: 14,
@@ -329,7 +328,6 @@ const styles = StyleSheet.create({
     },
     productCardActive: {
         borderWidth: 2,
-        borderColor: 'rgba(255, 255, 255, 0.2)',
     },
     inactiveCardOverlay: {
         position: 'absolute',
