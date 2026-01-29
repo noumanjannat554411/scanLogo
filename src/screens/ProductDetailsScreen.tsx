@@ -17,13 +17,14 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, Product } from '../types/navigation';
 import { images } from '../assets/images/images';
 import { product } from '../assets/data/arrays/data';
+import { scale } from '../utils/functions';
 
 const { width, height } = Dimensions.get('window');
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetails'>;
 
 export default function ProductDetailsScreen({ route, navigation }: Props) {
-    const { brand = "Nike", products = product.nike } = route.params ?? {brand: "Nike", products: product.nike};
+    const { brand = "Nike", products = product.nike } = route.params ?? { brand: "Nike", products: product.nike };
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [selectedSize, setSelectedSize] = useState<string>('9');
     const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -169,69 +170,76 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
             ) : (
                 // Product List/Carousel View (Screen 1) - 3D Coverflow Effect
                 <View style={styles.listView}>
-
                     <View style={styles.carouselContainer}>
                         <Carousel
                             ref={carouselRef}
                             loop={false}
-                            width={width}
+                            width={width * 0.7}
                             height={height * 0.7}
                             data={products}
                             scrollAnimationDuration={500}
                             onSnapToItem={(index: number) => setCurrentIndex(index)}
                             mode="parallax"
                             modeConfig={{
-                                parallaxScrollingScale: 0.75,
-                                parallaxScrollingOffset: 100,
+                                parallaxScrollingScale: 0.85,
+                                parallaxScrollingOffset: 80,
                             }}
                             windowSize={3}
                             style={{ width: width }}
-                            renderItem={({ item: product }: { item: Product }) => (
-                            <TouchableOpacity
-                                style={styles.carouselCard}
-                                onPress={() => handleProductPress(product)}
-                                activeOpacity={0.95}
-                            >
-                                <View style={styles.productCard}>
-                                    {/* Product Image */}
-                                    <Image
-                                        source={product.image}
-                                        style={styles.cardProductImage}
-                                        resizeMode="contain"
-                                    />
+                            renderItem={({ item: product, index }: { item: Product; index: number }) => (
+                                <TouchableOpacity
+                                    style={styles.carouselCard}
+                                    onPress={() => handleProductPress(product)}
+                                    activeOpacity={0.95}
+                                >
+                                    <View style={[
+                                        styles.productCard,
+                                        currentIndex === index && styles.productCardActive
+                                    ]}>
+                                        {/* Product Image */}
+                                        <Image
+                                            source={product.image}
+                                            style={styles.cardProductImage}
+                                            resizeMode="contain"
+                                        />
 
-                                    {/* Gradient Overlay at Bottom */}
-                                    <LinearGradient
-                                        colors={['transparent', 'rgba(0,0,0,0.9)']}
-                                        style={styles.gradientOverlay}
-                                    >
-                                        <View style={styles.cardContent}>
-                                            <Text style={styles.productTitle}>{product.title}</Text>
-                                            <Text style={styles.productCategory}>{product.type}</Text>
+                                        {/* Gradient Overlay at Bottom */}
+                                        <LinearGradient
+                                            colors={['transparent', 'rgba(0,0,0,0.9)']}
+                                            style={styles.gradientOverlay}
+                                        >
+                                            <View style={styles.cardContent}>
+                                                <Text style={styles.productTitle}>{product.title}</Text>
+                                                <Text style={styles.productCategory}>{product.type}</Text>
 
-                                            <View style={styles.bottomRow}>
-                                                {/* Pagination Dots */}
-                                                <View style={styles.pagination}>
-                                                    {products.map((_, dotIndex) => (
-                                                        <View
-                                                            key={dotIndex}
-                                                            style={[
-                                                                styles.paginationDot,
-                                                                currentIndex === dotIndex && styles.paginationDotActive
-                                                            ]}
-                                                        />
-                                                    ))}
+                                                <View style={styles.bottomRow}>
+                                                    {/* Pagination Dots */}
+                                                    <View style={styles.pagination}>
+                                                        {products.map((_, dotIndex) => (
+                                                            <View
+                                                                key={dotIndex}
+                                                                style={[
+                                                                    styles.paginationDot,
+                                                                    currentIndex === dotIndex && styles.paginationDotActive
+                                                                ]}
+                                                            />
+                                                        ))}
+                                                    </View>
+
+                                                    {/* Price */}
+                                                    <Text style={styles.priceTag}>${product.price}</Text>
                                                 </View>
-
-                                                {/* Price */}
-                                                <Text style={styles.priceTag}>${product.price}</Text>
                                             </View>
-                                        </View>
-                                    </LinearGradient>
-                                </View>
-                            </TouchableOpacity>
-                        )}
-                    />
+                                        </LinearGradient>
+
+                                        {/* Side card overlay to darken non-active cards */}
+                                        {currentIndex !== index && (
+                                            <View style={styles.inactiveCardOverlay} />
+                                        )}
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                        />
                     </View>
                 </View>
             )}
@@ -301,10 +309,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        width: width * 0.7,
     },
     productCard: {
-        width: '100%',
-        height: height * 0.65,
+        width: width * 0.65,
+        height: height * 0.5,
         borderRadius: 24,
         backgroundColor: '#2a2a2a',
         overflow: 'hidden',
@@ -313,6 +322,19 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 15,
         elevation: 20,
+    },
+    productCardActive: {
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    inactiveCardOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 24,
     },
     cardProductImage: {
         width: '100%',
