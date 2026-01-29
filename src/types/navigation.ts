@@ -4,6 +4,7 @@ export interface Product {
   price: string;
   type: string;
   url: string;
+  modelUrl?: string;
 }
 
 export type RootStackParamList = {

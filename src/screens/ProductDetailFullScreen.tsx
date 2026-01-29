@@ -10,6 +10,7 @@ import {
     Dimensions,
     StatusBar,
     ImageBackground,
+    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -17,6 +18,7 @@ import type { RootStackParamList, Product } from '../types/navigation';
 import { images } from '../assets/images/images';
 import { scale } from '../utils/functions';
 import LinearGradient from 'react-native-linear-gradient';
+import ARModelViewer from '../components/ARModelViewer';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,11 +27,16 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetailFull'>;
 export default function ProductDetailFullScreen({ route, navigation }: Props) {
     const { product } = route.params;
     const [selectedSize, setSelectedSize] = useState<string>('9');
+    const [showARViewer, setShowARViewer] = useState<boolean>(false);
 
     const handleViewIn3D = () => {
-        if (product) {
-            Linking.openURL(product.url).catch((err) =>
-                console.error('Failed to open URL:', err)
+        if (product.modelUrl && product.modelUrl.trim() !== '') {
+            setShowARViewer(true);
+        } else {
+            Alert.alert(
+                'AR Model Not Available',
+                'The 3D model for this product is not available yet. Please add the GLB file URL in the data.',
+                [{ text: 'OK' }]
             );
         }
     };
@@ -174,6 +181,16 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                     </View>
                 </ScrollView>
             </View>
+
+            {/* AR Model Viewer Modal */}
+            {product.modelUrl && (
+                <ARModelViewer
+                    visible={showARViewer}
+                    modelUrl={product.modelUrl}
+                    productTitle={product.title}
+                    onClose={() => setShowARViewer(false)}
+                />
+            )}
         </View>
     );
 }
