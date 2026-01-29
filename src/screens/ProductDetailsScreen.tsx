@@ -9,10 +9,11 @@ import {
     Linking,
     Dimensions,
     StatusBar,
+    Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
-import Carousel from 'react-native-reanimated-carousel';
+import Carousel from 'react-native-snap-carousel';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, Product } from '../types/navigation';
 import { images } from '../assets/images/images';
@@ -170,77 +171,75 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
             ) : (
                 // Product List/Carousel View (Screen 1) - 3D Coverflow Effect
                 <View style={styles.listView}>
-                    <View style={styles.carouselContainer}>
-                        <Carousel
-                            ref={carouselRef}
-                            loop={false}
-                            width={width * 0.7}
-                            height={height * 0.7}
-                            data={products}
-                            scrollAnimationDuration={500}
-                            onSnapToItem={(index: number) => setCurrentIndex(index)}
-                            mode="parallax"
-                            modeConfig={{
-                                parallaxScrollingScale: 0.85,
-                                parallaxScrollingOffset: 80,
-                            }}
-                            windowSize={3}
-                            style={{ width: width }}
-                            renderItem={({ item: product, index }: { item: Product; index: number }) => (
-                                <TouchableOpacity
-                                    style={styles.carouselCard}
-                                    onPress={() => handleProductPress(product)}
-                                    activeOpacity={0.95}
-                                >
-                                    <View style={[
-                                        styles.productCard,
-                                        currentIndex === index && styles.productCardActive
-                                    ]}>
-                                        {/* Product Image */}
-                                        <Image
-                                            source={product.image}
-                                            style={styles.cardProductImage}
-                                            resizeMode="contain"
-                                        />
+                    <Carousel
+                        ref={carouselRef}
+                        data={products}
+                        renderItem={({ item: product, index }: { item: Product; index: number }) => (
+                            <TouchableOpacity
+                                style={styles.carouselCard}
+                                onPress={() => handleProductPress(product)}
+                                activeOpacity={0.95}
+                            >
+                                <View style={[
+                                    styles.productCard,
+                                    currentIndex === index && styles.productCardActive
+                                ]}>
+                                    {/* Product Image */}
+                                    <Image
+                                        source={product.image}
+                                        style={styles.cardProductImage}
+                                        resizeMode="contain"
+                                    />
 
-                                        {/* Gradient Overlay at Bottom */}
-                                        <LinearGradient
-                                            colors={['transparent', 'rgba(0,0,0,0.9)']}
-                                            style={styles.gradientOverlay}
-                                        >
-                                            <View style={styles.cardContent}>
-                                                <Text style={styles.productTitle}>{product.title}</Text>
-                                                <Text style={styles.productCategory}>{product.type}</Text>
+                                    {/* Gradient Overlay at Bottom */}
+                                    <LinearGradient
+                                        colors={['transparent', 'rgba(0,0,0,0.9)']}
+                                        style={styles.gradientOverlay}
+                                    >
+                                        <View style={styles.cardContent}>
+                                            <Text style={styles.productTitle}>{product.title}</Text>
+                                            <Text style={styles.productCategory}>{product.type}</Text>
 
-                                                <View style={styles.bottomRow}>
-                                                    {/* Pagination Dots */}
-                                                    <View style={styles.pagination}>
-                                                        {products.map((_, dotIndex) => (
-                                                            <View
-                                                                key={dotIndex}
-                                                                style={[
-                                                                    styles.paginationDot,
-                                                                    currentIndex === dotIndex && styles.paginationDotActive
-                                                                ]}
-                                                            />
-                                                        ))}
-                                                    </View>
-
-                                                    {/* Price */}
-                                                    <Text style={styles.priceTag}>${product.price}</Text>
+                                            <View style={styles.bottomRow}>
+                                                {/* Pagination Dots */}
+                                                <View style={styles.pagination}>
+                                                    {products.map((_, dotIndex) => (
+                                                        <View
+                                                            key={dotIndex}
+                                                            style={[
+                                                                styles.paginationDot,
+                                                                currentIndex === dotIndex && styles.paginationDotActive
+                                                            ]}
+                                                        />
+                                                    ))}
                                                 </View>
-                                            </View>
-                                        </LinearGradient>
 
-                                        {/* Side card overlay to darken non-active cards */}
-                                        {currentIndex !== index && (
-                                            <View style={styles.inactiveCardOverlay} />
-                                        )}
-                                    </View>
-                                </TouchableOpacity>
-                            )}
-                        />
-                    </View>
+                                                {/* Price */}
+                                                <Text style={styles.priceTag}>${product.price}</Text>
+                                            </View>
+                                        </View>
+                                    </LinearGradient>
+
+                                    {/* Side card overlay to darken non-active cards */}
+                                    {currentIndex !== index && (
+                                        <View style={styles.inactiveCardOverlay} />
+                                    )}
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                        sliderWidth={width}
+                        itemWidth={width * 0.7}
+                        onSnapToItem={(index: number) => setCurrentIndex(index)}
+                        inactiveSlideScale={0.88}
+                        inactiveSlideOpacity={1}
+                        activeSlideAlignment="center"
+                        containerCustomStyle={styles.carouselContainerCustom}
+                        contentContainerCustomStyle={styles.carouselContentContainer}
+                        loop={false}
+                        enableMomentum={false}
+                        decelerationRate={0.9}
+                        useScrollView={true}
+                    />
                 </View>
             )}
         </View>
@@ -301,18 +300,23 @@ const styles = StyleSheet.create({
     },
     carouselContainer: {
         flex: 1,
-        justifyContent: 'center',
+        // justifyContent: 'center',
         alignItems: 'center',
-        width: width,
+    },
+    carouselContainerCustom: {
+        flexGrow: 1,
+        // justifyContent: 'center',
+    },
+    carouselContentContainer: {
+        alignItems: 'center',
     },
     carouselCard: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        width: width * 0.7,
+        height: height * 0.6,
     },
     productCard: {
-        width: width * 0.65,
+        width: '100%',
         height: height * 0.5,
         borderRadius: 24,
         backgroundColor: '#2a2a2a',
