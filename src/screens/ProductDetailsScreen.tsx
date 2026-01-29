@@ -169,23 +169,24 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
             ) : (
                 // Product List/Carousel View (Screen 1) - 3D Coverflow Effect
                 <View style={styles.listView}>
-                    <Text style={styles.homeScreenLabel}>Home Screen</Text>
 
-                    <Carousel
-                        ref={carouselRef}
-                        loop={false}
-                        width={width * 0.75}
-                        height={height * 0.7}
-                        data={products}
-                        scrollAnimationDuration={500}
-                        onSnapToItem={(index: number) => setCurrentIndex(index)}
-                        mode="parallax"
-                        modeConfig={{
-                            parallaxScrollingScale: 0.75,
-                            parallaxScrollingOffset: 50,
-                        }}
-                        style={{ width: width }}
-                        renderItem={({ item: product }: { item: Product }) => (
+                    <View style={styles.carouselContainer}>
+                        <Carousel
+                            ref={carouselRef}
+                            loop={false}
+                            width={width}
+                            height={height * 0.7}
+                            data={products}
+                            scrollAnimationDuration={500}
+                            onSnapToItem={(index: number) => setCurrentIndex(index)}
+                            mode="parallax"
+                            modeConfig={{
+                                parallaxScrollingScale: 0.75,
+                                parallaxScrollingOffset: 100,
+                            }}
+                            windowSize={3}
+                            style={{ width: width }}
+                            renderItem={({ item: product }: { item: Product }) => (
                             <TouchableOpacity
                                 style={styles.carouselCard}
                                 onPress={() => handleProductPress(product)}
@@ -231,6 +232,7 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                             </TouchableOpacity>
                         )}
                     />
+                    </View>
                 </View>
             )}
         </View>
@@ -289,11 +291,16 @@ const styles = StyleSheet.create({
         paddingTop: 16,
         paddingBottom: 12,
     },
+    carouselContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: width,
+    },
     carouselCard: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 10,
     },
     productCard: {
         width: '100%',
