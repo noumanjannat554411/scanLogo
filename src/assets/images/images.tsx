@@ -12,4 +12,6 @@ export const images = {
     back: require('./back.png'),
     glass: require('./glass.png'),
     box: require('./box.png'),
+    tabler_cube: require('./tabler_cube.png'),
+    splashBg: require('./splashBg.png'),
 }

@@ -6,10 +6,14 @@ import {
   StatusBar,
   Animated,
   Dimensions,
+  ImageBackground,
+  Image,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types/navigation';
+import { images } from '../assets/images/images';
+import { scale } from '../utils/functions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,19 +23,21 @@ export default function SplashScreen({ navigation }: Props) {
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.3);
   const slideAnim = new Animated.Value(50);
+  const rotateAnim = new Animated.Value(0);
+  const floatAnim = new Animated.Value(0);
 
   useEffect(() => {
     // Animate logo
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 1000,
+        duration: 1200,
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
-        tension: 10,
-        friction: 2,
+        tension: 8,
+        friction: 3,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
@@ -39,74 +45,124 @@ export default function SplashScreen({ navigation }: Props) {
         duration: 800,
         useNativeDriver: true,
       }),
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 1500,
+        useNativeDriver: true,
+      }),
     ]).start();
+
+    // Continuous floating animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
 
     // Navigate to Scanner after 2.5 seconds
     const timer = setTimeout(() => {
       navigation.replace('Scanner');
-    }, 2500);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <LinearGradient
-      colors={['#667eea', '#764ba2', '#f093fb']}
+    <ImageBackground
+      source={images.splashBg}
       style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
     >
-      <StatusBar barStyle="light-content" backgroundColor="#667eea" />
-      
-      <Animated.View
-        style={[
-          styles.content,
-          {
-            opacity: fadeAnim,
-            transform: [
-              { scale: scaleAnim },
-              { translateY: slideAnim },
-            ],
-          },
-        ]}
-      >
-        {/* Logo Icon */}
-        <View style={styles.logoContainer}>
-          <View style={styles.scannerFrame}>
-            <View style={styles.cornerTopLeft} />
-            <View style={styles.cornerTopRight} />
-            <View style={styles.cornerBottomLeft} />
-            <View style={styles.cornerBottomRight} />
-            
-            <Text style={styles.logoIcon}>📸</Text>
-          </View>
-        </View>
+      <Animated.Image 
+        source={images.tabler_cube} 
+        style={{ 
+          width: scale(250), 
+          height: scale(250), 
+          resizeMode: "contain",
+          opacity: fadeAnim,
+          transform: [
+            { scale: scaleAnim },
+            { 
+              rotate: rotateAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: ['0deg', '360deg']
+              })
+            },
+            {
+              translateY: floatAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, -20]
+              })
+            }
+          ]
+        }} 
+      />
+    </ImageBackground>
+    // <LinearGradient
+    //   colors={['#667eea', '#764ba2', '#f093fb']}
+    //   style={styles.container}
+    //   start={{ x: 0, y: 0 }}
+    //   end={{ x: 1, y: 1 }}
+    // >
+    //   <StatusBar barStyle="light-content" backgroundColor="#667eea" />
 
-        {/* App Name */}
-        <Text style={styles.appName}>ScanLogo</Text>
-        <Text style={styles.tagline}>Discover Brands Instantly</Text>
+    //   <Animated.View
+    //     style={[
+    //       styles.content,
+    //       {
+    //         opacity: fadeAnim,
+    //         transform: [
+    //           { scale: scaleAnim },
+    //           { translateY: slideAnim },
+    //         ],
+    //       },
+    //     ]}
+    //   >
+    //     {/* Logo Icon */}
+    //     <View style={styles.logoContainer}>
+    //       <View style={styles.scannerFrame}>
+    //         <View style={styles.cornerTopLeft} />
+    //         <View style={styles.cornerTopRight} />
+    //         <View style={styles.cornerBottomLeft} />
+    //         <View style={styles.cornerBottomRight} />
 
-        {/* Loading Indicator */}
-        <View style={styles.loadingContainer}>
-          <View style={styles.loadingBar}>
-            <Animated.View
-              style={[
-                styles.loadingProgress,
-                {
-                  opacity: fadeAnim,
-                },
-              ]}
-            />
-          </View>
-          <Text style={styles.loadingText}>Initializing camera...</Text>
-        </View>
-      </Animated.View>
+    //         <Text style={styles.logoIcon}>📸</Text>
+    //       </View>
+    //     </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Powered by Google Vision AI</Text>
-      </View>
-    </LinearGradient>
+    //     {/* App Name */}
+    //     <Text style={styles.appName}>ScanLogo</Text>
+    //     <Text style={styles.tagline}>Discover Brands Instantly</Text>
+
+    //     {/* Loading Indicator */}
+    //     <View style={styles.loadingContainer}>
+    //       <View style={styles.loadingBar}>
+    //         <Animated.View
+    //           style={[
+    //             styles.loadingProgress,
+    //             {
+    //               opacity: fadeAnim,
+    //             },
+    //           ]}
+    //         />
+    //       </View>
+    //       <Text style={styles.loadingText}>Initializing camera...</Text>
+    //     </View>
+    //   </Animated.View>
+
+    //   {/* Footer */}
+    //   <View style={styles.footer}>
+    //     <Text style={styles.footerText}>Powered by Google Vision AI</Text>
+    //   </View>
+    // </LinearGradient>
   );
 }
 
