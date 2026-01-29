@@ -9,7 +9,8 @@ import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LogoScanner from './src/components/LogoScanner';
+import SplashScreen from './src/screens/SplashScreen';
+import LogoScannerEnhanced from './src/components/LogoScannerEnhanced';
 import ProductDetailsScreen from './src/screens/ProductDetailsScreen';
 import type { RootStackParamList } from './src/types/navigation';
 
@@ -21,16 +22,31 @@ function App() {
       <NavigationContainer>
         <StatusBar barStyle="light-content" />
         <Stack.Navigator
+          initialRouteName="Splash"
           screenOptions={{
             headerShown: false,
+            animation: 'fade',
           }}
         >
-          <Stack.Screen name="Scanner" component={LogoScanner} />
+          <Stack.Screen 
+            name="Splash" 
+            component={SplashScreen}
+            options={{
+              animation: 'fade',
+            }}
+          />
+          <Stack.Screen 
+            name="Scanner" 
+            component={LogoScannerEnhanced}
+            options={{
+              animation: 'slide_from_right',
+            }}
+          />
           <Stack.Screen 
             name="ProductDetails" 
             component={ProductDetailsScreen}
             options={{
-              headerShown: false,
+              animation: 'slide_from_bottom',
               presentation: 'card',
             }}
           />

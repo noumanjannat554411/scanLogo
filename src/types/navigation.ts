@@ -7,6 +7,7 @@ export interface Product {
 }
 
 export type RootStackParamList = {
+  Splash: undefined;
   Scanner: undefined;
   ProductDetails: {
     brand: string;
