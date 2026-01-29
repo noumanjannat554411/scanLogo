@@ -6,4 +6,5 @@ export const images = {
     shoes5: require('./shoes5.png'),
     shoes6: require('./shoes6.png'),
     logo: require('./white.png'),
+    backgroundImage: require('./background.png'),
 }

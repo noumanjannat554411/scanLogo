@@ -10,6 +10,7 @@ import {
     Dimensions,
     StatusBar,
     Platform,
+    ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -180,7 +181,7 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                                 onPress={() => handleProductPress(product)}
                                 activeOpacity={0.95}
                             >
-                                <View style={[
+                                <ImageBackground source={images.backgroundImage} resizeMode='stretch' style={[
                                     styles.productCard, styles.productCardActive
                                 ]}>
                                     {/* Product Image */}
@@ -191,39 +192,19 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                                     />
 
                                     {/* Gradient Overlay at Bottom */}
-                                    <LinearGradient
-                                        colors={['transparent', 'rgba(0,0,0,0.9)']}
-                                        style={styles.gradientOverlay}
-                                    >
-                                        <View style={styles.cardContent}>
-                                            <Text style={styles.productTitle}>{product.title}</Text>
-                                            <Text style={styles.productCategory}>{product.type}</Text>
 
-                                            <View style={styles.bottomRow}>
-                                                {/* Pagination Dots */}
-                                                <View style={styles.pagination}>
-                                                    {products.map((_, dotIndex) => (
-                                                        <View
-                                                            key={dotIndex}
-                                                            style={[
-                                                                styles.paginationDot,
-                                                                currentIndex === dotIndex && styles.paginationDotActive
-                                                            ]}
-                                                        />
-                                                    ))}
-                                                </View>
+                                    <View style={styles.cardContent}>
+                                        <Text numberOfLines={1} style={[styles.productTitle, { fontSize: index === currentIndex ? scale(21) : scale(12.64) }]}>{product.title}</Text>
+                                        <Text style={[styles.productCategory, { fontSize: index === currentIndex ? scale(17) : scale(10) }]}>{product.type}</Text>
 
-                                                {/* Price */}
-                                                <Text style={styles.priceTag}>${product.price}</Text>
-                                            </View>
-                                        </View>
-                                    </LinearGradient>
+                                        <Text style={[styles.priceTag, { fontSize: index === currentIndex ? scale(26) : scale(15.4) }]}>{product.price}</Text>
+                                    </View>
 
                                     {/* Side card overlay to darken non-active cards */}
                                     {currentIndex !== index && (
                                         <View style={styles.inactiveCardOverlay} />
                                     )}
-                                </View>
+                                </ImageBackground>
                             </TouchableOpacity>
                         )}
                         sliderWidth={width}
@@ -317,11 +298,11 @@ const styles = StyleSheet.create({
     },
     productCard: {
         width: '100%',
-        height: scale(395),
+        height: scale(273),
         borderRadius: 24,
-        backgroundColor: '#2a2a2a',
-        overflow: 'hidden',
-        shadowColor: '#000',
+        // backgroundColor: '#2a2a2a',
+        overflow: 'visible',
+        // shadowColor: '#000',
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.5,
         shadowRadius: 15,
@@ -340,32 +321,35 @@ const styles = StyleSheet.create({
         borderRadius: 24,
     },
     cardProductImage: {
-        width: '100%',
-        height: '100%',
-        position: 'absolute',
+        width: scale(300),
+        height: scale(169),
+        // position: 'absolute',
+        overflow: 'visible',
+        transform: [{ rotate: "-30deg" }],
+        top: scale(-60),
+        left: scale(-20),
     },
     gradientOverlay: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '40%',
-        justifyContent: 'flex-end',
+        // position: 'absolute',
+        // bottom: 0,
+        // left: 0,
+        // right: 0,
+        // height: '40%',
+        // justifyContent: 'flex-end',
     },
     cardContent: {
-        padding: 24,
-        paddingBottom: 32,
+        paddingHorizontal: scale(13),
+        top: scale(-10)
     },
     productTitle: {
-        fontSize: 26,
+        fontSize: scale(21),
         fontWeight: '700',
         color: '#fff',
         marginBottom: 4,
     },
     productCategory: {
-        fontSize: 14,
+        fontSize: scale(17),
         color: '#aaa',
-        marginBottom: 20,
     },
     bottomRow: {
         flexDirection: 'row',
@@ -387,7 +371,7 @@ const styles = StyleSheet.create({
         width: 24,
     },
     priceTag: {
-        fontSize: 32,
+        fontSize: scale(26),
         fontWeight: 'bold',
         color: '#fff',
     },
