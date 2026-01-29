@@ -8,6 +8,7 @@ import {
     ActivityIndicator,
     Platform,
     Dimensions,
+    Image,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import RNFS from 'react-native-fs';
@@ -16,7 +17,7 @@ const { width, height } = Dimensions.get('window');
 
 interface ARModelViewerProps {
     visible: boolean;
-    modelUrl: string;
+    modelUrl: string | number;
     productTitle: string;
     onClose: () => void;
 }
@@ -42,21 +43,34 @@ export default function ARModelViewer({
             setIsLoading(true);
             setError(null);
 
-            // Check if it's a URL or local file
-            if (modelUrl.startsWith('http://') || modelUrl.startsWith('https://')) {
-                // It's a remote URL, use it directly
-                setBase64Model(modelUrl);
-            } else {
-                // It's a local file, convert to base64
-                const filePath = modelUrl.replace('file://', '');
-                const exists = await RNFS.exists(filePath);
-                
-                if (!exists) {
-                    throw new Error('Model file not found');
+            // Handle different types of modelUrl
+            if (typeof modelUrl === 'number') {
+                // It's a require() module ID, resolve it to get the actual path
+                const resolvedAsset = Image.resolveAssetSource(modelUrl);
+                if (resolvedAsset && resolvedAsset.uri) {
+                    setBase64Model(resolvedAsset.uri);
+                } else {
+                    throw new Error('Could not resolve model asset');
                 }
+            } else if (typeof modelUrl === 'string') {
+                // Check if it's a URL or local file path
+                if (modelUrl.startsWith('http://') || modelUrl.startsWith('https://')) {
+                    // It's a remote URL, use it directly
+                    setBase64Model(modelUrl);
+                } else {
+                    // It's a local file path, convert to base64
+                    const filePath = modelUrl.replace('file://', '');
+                    const exists = await RNFS.exists(filePath);
+                    
+                    if (!exists) {
+                        throw new Error('Model file not found');
+                    }
 
-                const base64Data = await RNFS.readFile(filePath, 'base64');
-                setBase64Model(`data:model/gltf-binary;base64,${base64Data}`);
+                    const base64Data = await RNFS.readFile(filePath, 'base64');
+                    setBase64Model(`data:model/gltf-binary;base64,${base64Data}`);
+                }
+            } else {
+                throw new Error('Invalid model URL type');
             }
             
             setIsLoading(false);

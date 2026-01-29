@@ -30,7 +30,7 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
     const [showARViewer, setShowARViewer] = useState<boolean>(false);
 
     const handleViewIn3D = () => {
-        if (product.modelUrl && product.modelUrl.trim() !== '') {
+        if (product.modelUrl) {
             setShowARViewer(true);
         } else {
             Alert.alert(
