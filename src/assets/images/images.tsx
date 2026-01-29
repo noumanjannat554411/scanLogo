@@ -7,4 +7,9 @@ export const images = {
     shoes6: require('./shoes6.png'),
     logo: require('./white.png'),
     backgroundImage: require('./background.png'),
+    notification: require('./Notification.png'),
+    menu: require('./menu.png'),
+    back: require('./back.png'),
+    glass: require('./glass.png'),
+    box: require('./box.png'),
 }

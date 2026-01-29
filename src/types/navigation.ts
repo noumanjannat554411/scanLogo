@@ -13,4 +13,7 @@ export type RootStackParamList = {
     brand: string;
     products: Product[];
   };
+  ProductDetailFull: {
+    product: Product;
+  };
 };

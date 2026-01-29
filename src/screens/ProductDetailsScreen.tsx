@@ -27,201 +27,82 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetails'>;
 
 export default function ProductDetailsScreen({ route, navigation }: Props) {
     const { brand = "Nike", products = product.nike } = route.params ?? { brand: "Nike", products: product.nike };
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-    const [selectedSize, setSelectedSize] = useState<string>('9');
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const carouselRef = useRef<any>(null);
 
     const handleProductPress = (product: Product) => {
-        setSelectedProduct(product);
-    };
-
-    const handleViewIn3D = () => {
-        if (selectedProduct) {
-            Linking.openURL(selectedProduct.url).catch((err) =>
-                console.error('Failed to open URL:', err)
-            );
-        }
-    };
-
-    const handleBackToList = () => {
-        setSelectedProduct(null);
-    };
-
-    const renderStars = (rating: number = 4) => {
-        return (
-            <View style={styles.starsContainer}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                    <Text key={star} style={styles.star}>
-                        {star <= rating ? '★' : '☆'}
-                    </Text>
-                ))}
-                <Text style={styles.reviewCount}>181 Reviews</Text>
-            </View>
-        );
+        // Navigate to the full detail screen
+        navigation.navigate('ProductDetailFull', { product });
     };
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+            <StatusBar barStyle="light-content" backgroundColor="#000" />
 
             {/* Header */}
             <SafeAreaView edges={['top']} style={styles.safeArea}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Text style={styles.menuIcon}>☰</Text>
+                        <Image source={images.menu} style={{ width: scale(24), height: scale(24), tintColor: '#fff', resizeMode: "contain" }} />
                     </TouchableOpacity>
 
                     <Image source={images.logo} style={styles.logo} resizeMode="contain" />
 
                     <View style={styles.headerRight}>
                         <TouchableOpacity style={styles.iconButton}>
-                            <Text style={styles.searchIcon}>🔍</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconButton}>
-                            <Text style={styles.bellIcon}>🔔</Text>
+                            <Image source={images.notification} style={{ width: scale(24), height: scale(24), tintColor: '#fff', resizeMode: "contain" }} />
+
                         </TouchableOpacity>
                     </View>
                 </View>
             </SafeAreaView>
 
-            {selectedProduct ? (
-                // Individual Product Detail View (Screen 2)
-                <ScrollView
-                    style={styles.detailView}
-                    showsVerticalScrollIndicator={false}
-                >
-                    {/* Top Section with Size Selector and Favorite */}
-                    <View style={styles.topSection}>
-                        <View style={styles.sizeRow}>
-                            <Text style={styles.sizeLabel}>Size</Text>
-                            <View style={styles.sizeButtonsRow}>
-                                {['8', '9', '10'].map((size) => (
-                                    <TouchableOpacity
-                                        key={size}
-                                        style={[
-                                            styles.sizeButton,
-                                            selectedSize === size && styles.sizeButtonActive,
-                                        ]}
-                                        onPress={() => setSelectedSize(size)}
-                                    >
-                                        <Text
-                                            style={[
-                                                styles.sizeButtonText,
-                                                selectedSize === size && styles.sizeButtonTextActive,
-                                            ]}
-                                        >
-                                            {size}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        </View>
-                        <TouchableOpacity style={styles.favoriteBtn}>
-                            <Text style={styles.heartIcon}>♡</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.payBadge}>
-                            <Text style={styles.payText}>Pay</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Product Image - Centered */}
-                    <View style={styles.imageSection}>
-                        <Image
-                            source={selectedProduct.image}
-                            style={styles.productImageDetail}
-                            resizeMode="contain"
-                        />
-                    </View>
-
-                    {/* Product Info Section */}
-                    <View style={styles.infoSection}>
-                        {/* Product Name */}
-                        <Text style={styles.productName}>{selectedProduct.title}</Text>
-
-                        {/* Rating */}
-                        {renderStars()}
-
-                        {/* Price */}
-                        <Text style={styles.price}>{selectedProduct.price}</Text>
-
-                        {/* Nike Label */}
-                        <Text style={styles.nikeLabel}>Nike</Text>
-
-                        {/* Description */}
-                        <View style={styles.descriptionBox}>
-                            <Text style={styles.descriptionTitle}>Description</Text>
-                            <Text style={styles.descriptionText}>
-                                Lorem Ipsum Dolor Sit Amet Consectetur. Sed Blandit In Molestie Aliquet. Tempor Malesuada Id Eget Tempus Molestie Amet Volutpat. Lectus Aliquet Habitasse Urna Ut Adipiscing Nunc Commodo Morbi Id Turpis Semper Nullam. Sed Commodo Amet Venenatis Mauris Pharetra...
-                            </Text>
-                            <TouchableOpacity>
-                                <Text style={styles.showMore}>Show More</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* View in 3D Button */}
+            {/* Product List/Carousel View - 3D Coverflow Effect */}
+            <View style={styles.listView}>
+                <Carousel
+                    ref={carouselRef}
+                    data={products}
+                    renderItem={({ item: product, index }: { item: Product; index: number }) => (
                         <TouchableOpacity
-                            style={styles.view3DButton}
-                            onPress={handleViewIn3D}
+                            style={[styles.carouselCard, { right: currentIndex === index + 1 || currentIndex === index + 2 ? scale(-20) : currentIndex === index - 1 ? scale(-20) : currentIndex === index ? scale(-20) : 0 }]}
+                            onPress={() => handleProductPress(product)}
+                            activeOpacity={0.95}
                         >
-                            <Text style={styles.cubeIcon}>📦</Text>
-                            <Text style={styles.view3DText}>View in 3D</Text>
+                            <ImageBackground source={images.backgroundImage} resizeMode='stretch' style={[
+                                styles.productCard, styles.productCardActive
+                            ]}>
+                                {/* Product Image */}
+                                <Image
+                                    source={product.image}
+                                    style={styles.cardProductImage}
+                                    resizeMode="contain"
+                                />
+
+                                {/* Product Info */}
+                                <View style={styles.cardContent}>
+                                    <Text numberOfLines={1} style={[styles.productTitle, { fontSize: index === currentIndex ? scale(21) : scale(12.64) }]}>{product.title}</Text>
+                                    <Text style={[styles.productCategory, { fontSize: index === currentIndex ? scale(17) : scale(10) }]}>{product.type}</Text>
+                                    <Text style={[styles.priceTag, { fontSize: index === currentIndex ? scale(26) : scale(15.4) }]}>{product.price}</Text>
+                                </View>
+
+
+                            </ImageBackground>
                         </TouchableOpacity>
-                    </View>
-                </ScrollView>
-            ) : (
-                // Product List/Carousel View (Screen 1) - 3D Coverflow Effect
-                <View style={styles.listView}>
-                    <Carousel
-                        ref={carouselRef}
-                        data={products}
-                        renderItem={({ item: product, index }: { item: Product; index: number }) => (
-                            <TouchableOpacity
-                                style={[styles.carouselCard, { right: currentIndex === index + 1 ? scale(-20) : currentIndex === index - 1 ? scale(-20) : currentIndex === index ? scale(-20) : 0 }]}
-                                onPress={() => handleProductPress(product)}
-                                activeOpacity={0.95}
-                            >
-                                <ImageBackground source={images.backgroundImage} resizeMode='stretch' style={[
-                                    styles.productCard, styles.productCardActive
-                                ]}>
-                                    {/* Product Image */}
-                                    <Image
-                                        source={product.image}
-                                        style={styles.cardProductImage}
-                                        resizeMode="contain"
-                                    />
-
-                                    {/* Gradient Overlay at Bottom */}
-
-                                    <View style={styles.cardContent}>
-                                        <Text numberOfLines={1} style={[styles.productTitle, { fontSize: index === currentIndex ? scale(21) : scale(12.64) }]}>{product.title}</Text>
-                                        <Text style={[styles.productCategory, { fontSize: index === currentIndex ? scale(17) : scale(10) }]}>{product.type}</Text>
-
-                                        <Text style={[styles.priceTag, { fontSize: index === currentIndex ? scale(26) : scale(15.4) }]}>{product.price}</Text>
-                                    </View>
-
-                                    {/* Side card overlay to darken non-active cards */}
-                                    {currentIndex !== index && (
-                                        <View style={styles.inactiveCardOverlay} />
-                                    )}
-                                </ImageBackground>
-                            </TouchableOpacity>
-                        )}
-                        sliderWidth={width}
-                        itemWidth={width * 0.7}
-                        onSnapToItem={(index: number) => setCurrentIndex(index)}
-                        inactiveSlideScale={0.88}
-                        inactiveSlideOpacity={1}
-                        activeSlideAlignment="center"
-                        containerCustomStyle={styles.carouselContainerCustom}
-                        contentContainerCustomStyle={styles.carouselContentContainer}
-                        loop={false}
-                        enableMomentum={false}
-                        decelerationRate={0.9}
-                        useScrollView={true}
-                    />
-                </View>
-            )}
+                    )}
+                    sliderWidth={width}
+                    itemWidth={width * 0.7}
+                    onSnapToItem={(index: number) => setCurrentIndex(index)}
+                    inactiveSlideScale={0.88}
+                    inactiveSlideOpacity={1}
+                    activeSlideAlignment="center"
+                    containerCustomStyle={styles.carouselContainerCustom}
+                    contentContainerCustomStyle={styles.carouselContentContainer}
+                    loop={false}
+                    enableMomentum={false}
+                    decelerationRate={0.9}
+                    useScrollView={true}
+                />
+            </View>
         </View>
     );
 }
@@ -240,7 +121,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 12,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: '#000',
     },
     menuIcon: {
         fontSize: 28,
@@ -379,7 +260,86 @@ const styles = StyleSheet.create({
     // Detail View (Screen 2)
     detailView: {
         flex: 1,
+        flexDirection: 'row',
         backgroundColor: '#1a1a1a',
+    },
+
+    // Left Sidebar Styles
+    leftSidebar: {
+        width: 60,
+        backgroundColor: '#1a1a1a',
+        paddingVertical: 20,
+        paddingHorizontal: 8,
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        borderRightWidth: 1,
+        borderRightColor: '#2a2a2a',
+    },
+    sidebarSizeLabel: {
+        fontSize: 11,
+        color: '#888',
+        fontWeight: '500',
+        marginBottom: 12,
+        transform: [{ rotate: '-90deg' }],
+        width: 40,
+    },
+    sidebarSizeButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 10,
+        backgroundColor: '#2a2a2a',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 12,
+        borderWidth: 1.5,
+        borderColor: '#3a3a3a',
+    },
+    sidebarSizeButtonActive: {
+        backgroundColor: '#FF6B35',
+        borderColor: '#FF6B35',
+    },
+    sidebarSizeText: {
+        fontSize: 16,
+        color: '#888',
+        fontWeight: '600',
+    },
+    sidebarSizeTextActive: {
+        color: '#fff',
+    },
+    sidebarSpacer: {
+        flex: 1,
+    },
+    sidebarIconButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#2a2a2a',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 12,
+        borderWidth: 1.5,
+        borderColor: '#3a3a3a',
+    },
+    sidebarIcon: {
+        fontSize: 22,
+        color: '#fff',
+    },
+    sidebarPayButton: {
+        backgroundColor: '#FF6B35',
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginBottom: 8,
+    },
+    sidebarPayText: {
+        fontSize: 11,
+        color: '#fff',
+        fontWeight: '700',
+    },
+
+    // Main Content Area
+    detailContent: {
+        flex: 1,
     },
     topSection: {
         flexDirection: 'row',
@@ -470,6 +430,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingTop: 24,
         paddingBottom: 40,
+    },
+    brandLabel: {
+        fontSize: 12,
+        color: '#888',
+        marginBottom: 8,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
     productName: {
         fontSize: 24,

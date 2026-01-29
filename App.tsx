@@ -13,6 +13,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SplashScreen from './src/screens/SplashScreen';
 import LogoScannerEnhanced from './src/components/LogoScannerEnhanced';
 import ProductDetailsScreen from './src/screens/ProductDetailsScreen';
+import ProductDetailFullScreen from './src/screens/ProductDetailFullScreen';
 import type { RootStackParamList } from './src/types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -49,6 +50,15 @@ function App() {
             component={ProductDetailsScreen}
             options={{
               animation: 'slide_from_bottom',
+              presentation: 'card',
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen 
+            name="ProductDetailFull" 
+            component={ProductDetailFullScreen}
+            options={{
+              animation: 'slide_from_right',
               presentation: 'card',
               headerShown: false,
             }}
