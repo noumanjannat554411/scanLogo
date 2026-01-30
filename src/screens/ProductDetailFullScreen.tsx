@@ -18,14 +18,14 @@ import type { RootStackParamList, Product } from '../types/navigation';
 import { images } from '../assets/images/images';
 import { scale } from '../utils/functions';
 import LinearGradient from 'react-native-linear-gradient';
-import ARModelViewer from '../components/ARModelViewer';
+import NativeARViewer from '../components/NativeARViewer';
 
 const { width, height } = Dimensions.get('window');
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetailFull'>;
 
 export default function ProductDetailFullScreen({ route, navigation }: Props) {
-    const { product } = route.params;
+    const { product }: any = route.params;
     const [selectedSize, setSelectedSize] = useState<string>('9');
     const [showARViewer, setShowARViewer] = useState<boolean>(false);
 
@@ -155,7 +155,7 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                         <View style={styles.descriptionBox}>
                             <Text style={styles.descriptionTitle}>Description</Text>
                             <Text style={styles.descriptionText}>
-                                Lorem Ipsum Dolor Sit Amet Consectetur. Sed Blandit In Molestie Aliquet. Tempor Malesuada Id Eget Tempus Molestie Amet Volutpat. Lectus Aliquet Habitasse Urna Ut Adipiscing Nunc Commodo Morbi Id Turpis Semper Nullam. Sed Commodo Amet Venenatis Mauris Pharetra...
+                                 {product.description}
                             </Text>
                             {/* <TouchableOpacity>
                                 <Text style={styles.showMore}>Show Less</Text>
@@ -182,9 +182,9 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                 </ScrollView>
             </View>
 
-            {/* AR Model Viewer Modal */}
+            {/* Native AR Viewer Modal */}
             {product.modelUrl && (
-                <ARModelViewer
+                <NativeARViewer
                     visible={showARViewer}
                     modelUrl={product.modelUrl}
                     productTitle={product.title}

@@ -40,43 +40,54 @@ export default function ARModelViewer({
 
     const loadModel = async () => {
         try {
+            console.log('🔵 loadModel called with modelUrl:', modelUrl, 'Type:', typeof modelUrl);
             setIsLoading(true);
             setError(null);
 
             // Handle different types of modelUrl
             if (typeof modelUrl === 'number') {
+                console.log('📦 Resolving asset from require() module ID:', modelUrl);
                 // It's a require() module ID, resolve it to get the actual path
                 const resolvedAsset = Image.resolveAssetSource(modelUrl);
+                console.log('✅ Resolved asset:', resolvedAsset);
                 if (resolvedAsset && resolvedAsset.uri) {
+                    console.log('✅ Using URI:', resolvedAsset.uri);
                     setBase64Model(resolvedAsset.uri);
                 } else {
                     throw new Error('Could not resolve model asset');
                 }
             } else if (typeof modelUrl === 'string') {
+                console.log('📝 Processing string modelUrl:', modelUrl);
                 // Check if it's a URL or local file path
                 if (modelUrl.startsWith('http://') || modelUrl.startsWith('https://')) {
+                    console.log('🌐 Using remote URL:', modelUrl);
                     // It's a remote URL, use it directly
                     setBase64Model(modelUrl);
                 } else {
+                    console.log('📁 Processing local file path');
                     // It's a local file path, convert to base64
                     const filePath = modelUrl.replace('file://', '');
+                    console.log('📂 Checking file exists at:', filePath);
                     const exists = await RNFS.exists(filePath);
                     
                     if (!exists) {
-                        throw new Error('Model file not found');
+                        throw new Error('Model file not found at: ' + filePath);
                     }
 
+                    console.log('📖 Reading file as base64...');
                     const base64Data = await RNFS.readFile(filePath, 'base64');
+                    console.log('✅ File read successfully, length:', base64Data.length);
                     setBase64Model(`data:model/gltf-binary;base64,${base64Data}`);
                 }
             } else {
-                throw new Error('Invalid model URL type');
+                throw new Error('Invalid model URL type: ' + typeof modelUrl);
             }
             
+            console.log('✅ Model loaded successfully');
             setIsLoading(false);
         } catch (err) {
-            console.error('Error loading model:', err);
-            setError('Failed to load 3D model');
+            console.error('❌ Error loading model:', err);
+            setError('Failed to load 3D model: ' + (err as Error).message);
             setIsLoading(false);
         }
     };
