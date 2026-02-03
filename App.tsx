@@ -25,47 +25,47 @@ function App() {
         <NavigationContainer>
           <StatusBar barStyle="light-content" />
           <Stack.Navigator
-            initialRouteName="ProductDetails"
+            initialRouteName="Splash"
             screenOptions={{
               headerShown: false,
               animation: 'fade',
             }}
           >
-          <Stack.Screen 
-            name="Splash" 
-            component={SplashScreen}
-            options={{
-              animation: 'fade',
-            }}
-          />
-          <Stack.Screen 
-            name="Scanner" 
-            component={LogoScannerEnhanced}
-            options={{
-              animation: 'slide_from_right',
-            }}
-          />
-          <Stack.Screen 
-            name="ProductDetails" 
-            component={ProductDetailsScreen}
-            options={{
-              animation: 'slide_from_bottom',
-              presentation: 'card',
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen 
-            name="ProductDetailFull" 
-            component={ProductDetailFullScreen}
-            options={{
-              animation: 'slide_from_right',
-              presentation: 'card',
-              headerShown: false,
-            }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SafeAreaProvider>
+            <Stack.Screen
+              name="Splash"
+              component={SplashScreen}
+              options={{
+                animation: 'fade',
+              }}
+            />
+            <Stack.Screen
+              name="Scanner"
+              component={LogoScannerEnhanced}
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
+            <Stack.Screen
+              name="ProductDetails"
+              component={ProductDetailsScreen}
+              options={{
+                animation: 'slide_from_bottom',
+                presentation: 'card',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="ProductDetailFull"
+              component={ProductDetailFullScreen}
+              options={{
+                animation: 'slide_from_right',
+                presentation: 'card',
+                headerShown: false,
+              }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
