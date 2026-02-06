@@ -318,8 +318,8 @@ const styles = StyleSheet.create({
         transform: [{ rotate: "-30deg" }],
     },
     imageSectionRalph: {
-        width: scale(333),
-        height: scale(250),
+        width: scale(280),
+        height: scale(270),
         justifyContent: 'center',
         alignItems: 'center',
     },

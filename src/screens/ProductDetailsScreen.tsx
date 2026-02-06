@@ -26,7 +26,7 @@ const { width, height } = Dimensions.get('window');
 type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetails'>;
 
 export default function ProductDetailsScreen({ route, navigation }: Props) {
-    const { brand = "Nike", products = product.ralphLauren } = route.params ?? { brand: "Nike", products: product.ralphLauren };
+    const { brand = "Nike", products = product.nike } = route.params ?? { brand: "Nike", products: product.nike };
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const carouselRef = useRef<any>(null);
 
@@ -62,14 +62,13 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                         ref={carouselRef}
                         data={products}
                         renderItem={({ item: product, index }: { item: Product; index: number }) => {
-                            const isActive = index === currentIndex;
                             return (
                                 <TouchableOpacity
                                     style={[
                                         styles.carouselCard,
                                         {
                                             right: currentIndex === index + 1 || currentIndex === index + 2 ? scale(-20) : currentIndex === index - 1 ? scale(-20) : currentIndex === index ? scale(-20) : 0,
-                                            height: isActive ? scale(395) : scale(320),
+                                            height: scale(395),
                                         }
                                     ]}
                                     onPress={() => handleProductPress(product)}
@@ -82,7 +81,7 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                                             styles.productCard,
                                             styles.productCardActive,
                                             {
-                                                height: isActive ? scale(273) : scale(220),
+                                                height: scale(brand === "Nike" ? 260 : 320),
                                             }
                                         ]}
                                     >
@@ -92,28 +91,28 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                                             style={[
                                                 styles.cardProductImage,
                                                 {
+                                                    position:"absolute",
                                                     transform: [{ rotate: brand === "Nike" ? "-30deg" : "0deg" }],
-                                                    width: isActive ? scale(brand === "Nike" ? 300 : 220) : scale(brand === "Nike" ? 240 : 160),
-                                                    height: isActive ? scale(169) : scale(135),
-                                                    top: isActive ? scale(-60) : scale(-48),
-                                                    left:brand === "Nike"? (isActive ? scale(-20) : scale(-16)):0,
-                                                    alignSelf:"center"
+                                                    width: scale(brand === "Nike" ? 250 : 220),
+                                                    height:  scale(brand === "Nike" ? 169 : 259),
+                                                    top: scale(brand === "Nike" ? -60 : -90),
+                                                    left: brand === "Nike" ? scale(0) : scale(25),
+                                                    // alignSelf: "center"
+                                                    alignItems:"center"
                                                 }
                                             ]}
-                                            resizeMode={brand === "Nike" ? "contain": "stretch"}
-                                            onError={(error) => console.log('Image load error:', error.nativeEvent.error)}
-                                            onLoad={() => console.log('Image loaded successfully for:', product.title)}
+                                            resizeMode={brand === "Nike" ? "contain" : "stretch"}
                                         />
 
                                         {/* Product Info */}
-                                        <View style={[styles.cardContent, { top: isActive ? scale(brand === "Nike" ? -10 : -35) : scale(brand === "Nike"?-5: -25) }]}>
-                                            <Text numberOfLines={1} style={[styles.productTitle, { fontSize: isActive ? scale(21) : scale(16) }]}>
+                                        <View style={[styles.cardContent, { top: scale(brand === "Nike" ? 140 : 180) }]}>
+                                            <Text numberOfLines={1} style={[styles.productTitle, { fontSize: scale(21) }]}>
                                                 {product.title}
                                             </Text>
-                                            <Text style={[styles.productCategory, { fontSize: isActive ? scale(17) : scale(13) }]}>
+                                            <Text style={[styles.productCategory, { fontSize: scale(17) }]}>
                                                 {product.type}
                                             </Text>
-                                            <Text style={[styles.priceTag, { fontSize: isActive ? scale(26) : scale(20) }]}>
+                                            <Text style={[styles.priceTag, { fontSize: scale(26) }]}>
                                                 {product.price}
                                             </Text>
                                         </View>
