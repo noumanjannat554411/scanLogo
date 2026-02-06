@@ -15,10 +15,12 @@ import { WebView } from 'react-native-webview';
 import RNFS from 'react-native-fs';
 import LinearGradient from 'react-native-linear-gradient';
 import { scale } from '../utils/functions';
+import ARQuickLook from '../utils/ARQuickLook';
 
 interface NativeARViewerProps {
     visible: boolean;
-    modelUrl: string | number;
+    modelUrl: string | number; // URL for 3D WebView
+    modelLocalFile?: number; // Local file for AR (require())
     productTitle: string;
     onClose: () => void;
 }
@@ -26,11 +28,13 @@ interface NativeARViewerProps {
 export default function NativeARViewer({
     visible,
     modelUrl,
+    modelLocalFile,
     productTitle,
     onClose,
 }: NativeARViewerProps) {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [modelPath, setModelPath] = useState<string | null>(null);
+    const [arModelPath, setArModelPath] = useState<string | null>(null);
 
     useEffect(() => {
         if (visible && modelUrl) {
@@ -43,6 +47,7 @@ export default function NativeARViewer({
             setIsLoading(true);
             console.log('🔵 Preparing model, type:', typeof modelUrl);
 
+            // Prepare the 3D viewer model (URL for WebView)
             if (typeof modelUrl === 'number') {
                 // Resolve the asset from require()
                 const resolvedAsset = Image.resolveAssetSource(modelUrl);
@@ -57,6 +62,18 @@ export default function NativeARViewer({
                 setModelPath(modelUrl);
             }
 
+            // Prepare the AR model (local file)
+            if (modelLocalFile && typeof modelLocalFile === 'number') {
+                const resolvedArAsset = Image.resolveAssetSource(modelLocalFile);
+                console.log('✅ Resolved AR asset:', resolvedArAsset);
+                
+                if (resolvedArAsset && resolvedArAsset.uri) {
+                    setArModelPath(resolvedArAsset.uri);
+                } else {
+                    console.warn('Could not resolve AR model asset');
+                }
+            }
+
             setIsLoading(false);
         } catch (error) {
             console.error('❌ Error preparing model:', error);
@@ -68,20 +85,23 @@ export default function NativeARViewer({
 
     const openInAR = async () => {
         if (!modelPath) {
+            Alert.alert('AR Not Available', '3D model is not ready for AR viewing.');
             return;
         }
 
         try {
-            console.log('🚀 Opening AR with path:', modelPath);
+            console.log('🚀 Opening AR with model path:', modelPath);
 
             if (Platform.OS === 'android') {
-                // For Android, check if it's a remote HTTPS URL
+                // For Android, open Scene Viewer via web URL
                 if (modelPath.startsWith('https://')) {
-                    const intentUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(modelPath)}&mode=ar_preferred&title=${encodeURIComponent(productTitle)}#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=https://developers.google.com/ar;end;`;
+                    const sceneViewerUrl = `https://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(modelPath)}&mode=ar_preferred&title=${encodeURIComponent(productTitle)}`;
+                    
+                    console.log('🤖 Opening Android Scene Viewer via web:', sceneViewerUrl);
                     
                     try {
-                        await Linking.openURL(intentUrl);
-                        console.log('✅ AR opened successfully');
+                        await Linking.openURL(sceneViewerUrl);
+                        console.log('✅ Android AR opened successfully');
                     } catch (error) {
                         console.error('❌ AR not available:', error);
                         Alert.alert(
@@ -98,13 +118,126 @@ export default function NativeARViewer({
                     );
                 }
             } else if (Platform.OS === 'ios') {
-                const quickLookUrl = modelPath.startsWith('http') ? modelPath : `file://${modelPath}`;
-                try {
-                    await Linking.openURL(quickLookUrl);
-                } catch (error) {
+                // iOS: Download file first, then open with QLPreviewController
+                // QLPreviewController requires local files, not remote URLs
+                
+                if (modelPath && modelPath.startsWith('https://')) {
+                    // Download the remote file first
+                    setIsLoading(true);
+                    console.log('📥 Downloading model for AR:', modelPath);
+                    
+                    try {
+                        // Get file extension from URL
+                        const urlParts = modelPath.split('.');
+                        const extension = urlParts[urlParts.length - 1].split('?')[0];
+                        const fileName = `${productTitle.replace(/\s+/g, '_')}_ar.${extension}`;
+                        const downloadPath = `${RNFS.DocumentDirectoryPath}/${fileName}`;
+                        
+                        console.log('📥 Downloading to:', downloadPath);
+                        
+                        // Remove if exists
+                        const exists = await RNFS.exists(downloadPath);
+                        if (exists) {
+                            await RNFS.unlink(downloadPath);
+                        }
+                        
+                        // Download the file
+                        const downloadResult = await RNFS.downloadFile({
+                            fromUrl: modelPath,
+                            toFile: downloadPath,
+                            background: false,
+                            discretionary: false,
+                        }).promise;
+                        
+                        if (downloadResult.statusCode === 200) {
+                            const fileInfo = await RNFS.stat(downloadPath);
+                            console.log('✅ Downloaded successfully, size:', fileInfo.size, 'bytes');
+                            
+                            setIsLoading(false);
+                            
+                            // Now open with QLPreviewController
+                            const fileUrl = `file://${downloadPath}`;
+                            console.log('🚀 Opening AR Quick Look with:', fileUrl);
+                            
+                            await ARQuickLook.openInAR(fileUrl);
+                            console.log('✅ AR Quick Look opened successfully');
+                        } else {
+                            throw new Error(`Download failed with status: ${downloadResult.statusCode}`);
+                        }
+                    } catch (error) {
+                        console.error('❌ Error downloading/opening AR:', error);
+                        setIsLoading(false);
+                        Alert.alert(
+                            'AR Error',
+                            `Failed to open AR view: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                            [{ text: 'OK' }]
+                        );
+                    }
+                } else if (arModelPath && !arModelPath.startsWith('http')) {
+                    // We have a local AR model - copy it to accessible location
+                    setIsLoading(true);
+                    console.log('✅ Using local AR model:', arModelPath);
+                    
+                    try {
+                        // Create a safe filename
+                        const fileName = `${productTitle.replace(/\s+/g, '_')}.glb`;
+                        const destPath = `${RNFS.DocumentDirectoryPath}/${fileName}`;
+                        
+                        console.log('📋 Copying from:', arModelPath);
+                        console.log('📋 Copying to:', destPath);
+                        
+                        // Remove if exists
+                        const exists = await RNFS.exists(destPath);
+                        if (exists) {
+                            await RNFS.unlink(destPath);
+                        }
+                        
+                        // Copy the file from assets to Documents
+                        const sourcePath = arModelPath.replace('file://', '');
+                        await RNFS.copyFile(sourcePath, destPath);
+                        
+                        console.log('✅ File copied successfully');
+                        
+                        // Verify the file
+                        const fileExists = await RNFS.exists(destPath);
+                        if (fileExists) {
+                            const fileInfo = await RNFS.stat(destPath);
+                            console.log('📊 Copied file size:', fileInfo.size, 'bytes');
+                            
+                            setIsLoading(false);
+                            
+                            // Use native AR Quick Look module
+                            const fileUrl = `file://${destPath}`;
+                            console.log('🚀 Opening AR with native module:', fileUrl);
+                            
+                            try {
+                                await ARQuickLook.openInAR(fileUrl);
+                                console.log('✅ AR Quick Look opened successfully');
+                            } catch (arError) {
+                                console.error('❌ AR Quick Look failed:', arError);
+                                Alert.alert(
+                                    'AR Error',
+                                    'Failed to open AR Quick Look. Please make sure your device supports AR.',
+                                    [{ text: 'OK' }]
+                                );
+                            }
+                        } else {
+                            throw new Error('File copy failed');
+                        }
+                    } catch (error) {
+                        console.error('❌ Error copying/opening local AR file:', error);
+                        setIsLoading(false);
+                        Alert.alert(
+                            'AR Error',
+                            `Failed to prepare AR view: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                            [{ text: 'OK' }]
+                        );
+                    }
+                } else {
+                    // Fallback: No valid URL
                     Alert.alert(
                         'AR Not Available',
-                        'AR Quick Look is not available on this device.',
+                        'No AR model available for this product.',
                         [{ text: 'OK' }]
                     );
                 }

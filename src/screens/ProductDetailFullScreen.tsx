@@ -187,6 +187,7 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                 <NativeARViewer
                     visible={showARViewer}
                     modelUrl={product.modelUrl}
+                    modelLocalFile={product.modelLocalFile}
                     productTitle={product.title}
                     onClose={() => setShowARViewer(false)}
                 />

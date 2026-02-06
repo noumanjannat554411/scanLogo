@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { StatusBar } from 'react-native';
+import { StatusBar, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
@@ -20,12 +20,13 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    // <Text style={{color:"red", top:400}}>Hello World</Text>
+    // <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <NavigationContainer>
           <StatusBar barStyle="light-content" />
           <Stack.Navigator
-            initialRouteName="Splash"
+            initialRouteName="ProductDetails"
             screenOptions={{
               headerShown: false,
               animation: 'fade',
@@ -66,7 +67,7 @@ function App() {
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaProvider>
-    </GestureHandlerRootView>
+    // </GestureHandlerRootView>
   );
 }
 
