@@ -63,16 +63,16 @@ export default function NativeARViewer({
             }
 
             // Prepare the AR model (local file)
-            if (modelLocalFile && typeof modelLocalFile === 'number') {
-                const resolvedArAsset = Image.resolveAssetSource(modelLocalFile);
-                console.log('✅ Resolved AR asset:', resolvedArAsset);
+            // if (modelLocalFile && typeof modelLocalFile === 'number') {
+            //     const resolvedArAsset = Image.resolveAssetSource(modelLocalFile);
+            //     console.log('✅ Resolved AR asset:', resolvedArAsset);
                 
-                if (resolvedArAsset && resolvedArAsset.uri) {
-                    setArModelPath(resolvedArAsset.uri);
-                } else {
-                    console.warn('Could not resolve AR model asset');
-                }
-            }
+            //     if (resolvedArAsset && resolvedArAsset.uri) {
+            //         setArModelPath(resolvedArAsset.uri);
+            //     } else {
+            //         console.warn('Could not resolve AR model asset');
+            //     }
+            // }
 
             setIsLoading(false);
         } catch (error) {

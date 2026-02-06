@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
     Text,
@@ -35,6 +35,9 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
         navigation.navigate('ProductDetailFull', { product });
     };
     const insets = useSafeAreaInsets();
+    useEffect(()=>{
+        console.log("ProductDetailsScreen mounted", products);
+    },[])
     return (
         <ImageBackground source={images.homeBg} imageStyle={[styles.container, { opacity: 1 }]} style={styles.container} resizeMode='cover'>
             <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
@@ -92,10 +95,10 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                                             style={[
                                                 styles.cardProductImage,
                                                 {
-                                                    width: isActive ? scale(300) : scale(240),
-                                                    height: isActive ? scale(169) : scale(135),
-                                                    top: isActive ? scale(-60) : scale(-48),
-                                                    left: isActive ? scale(-20) : scale(-16),
+                                                    // width: isActive ? scale(300) : scale(240),
+                                                    // height: isActive ? scale(169) : scale(135),
+                                                    // top: isActive ? scale(-60) : scale(-48),
+                                                    // left: isActive ? scale(-20) : scale(-16),
                                                 }
                                             ]}
                                             resizeMode="contain"
@@ -235,9 +238,9 @@ const styles = StyleSheet.create({
         height: scale(169),
         // position: 'absolute',
         overflow: 'visible',
-        transform: [{ rotate: "-30deg" }],
-        top: scale(-60),
-        left: scale(-20),
+        // transform: [{ rotate: "-30deg" }],
+        // top: scale(-60),
+        // left: scale(-20),
     },
     gradientOverlay: {
         // position: 'absolute',

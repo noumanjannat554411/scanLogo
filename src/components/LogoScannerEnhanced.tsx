@@ -219,9 +219,18 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
         startGlowAnimation();
         isProcessingRef.current = false;
         
+        // Check for Nike logo
         const nikeDetected = logos.find(logo => 
           logo.description.toLowerCase().includes('nike')
         );
+        
+        // Check for Ralph Lauren logo
+        const ralphLauren = logos.find(logo => {
+          const desc = logo.description.toLowerCase();
+          return desc.includes('ralph lauren') || 
+                 desc.includes('polo') || 
+                 desc.includes('ralph');
+        });
         
         if (nikeDetected && navigation) {
           setTimeout(() => {
@@ -229,6 +238,14 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
             navigation.navigate('ProductDetails', {
               brand: 'Nike',
               products: product.nike,
+            });
+          }, 1000);
+        } else if (ralphLauren && navigation) {
+          setTimeout(() => {
+            stopScanning();
+            navigation.navigate('ProductDetails', {
+              brand: 'Ralph Lauren',
+              products: product.ralphLauren,
             });
           }, 1000);
         } else {
@@ -459,6 +476,10 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
             >
               {detectedLogos.map((logo, index) => {
                 const isNike = logo.description.toLowerCase().includes('nike');
+                const isRalphLauren = logo.description.toLowerCase().includes('ralph lauren') || 
+                                      logo.description.toLowerCase().includes('polo') ||
+                                      logo.description.toLowerCase().includes('ralph');
+                
                 return (
                   <View key={index} style={styles.logoCard}>
                     <View style={styles.logoCardHeader}>
@@ -480,7 +501,21 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
                           });
                         }}
                       >
-                        <Text style={styles.viewProductsText}>View Products →</Text>
+                        <Text style={styles.viewProductsText}>View Nike Products →</Text>
+                      </TouchableOpacity>
+                    )}
+                    {isRalphLauren && navigation && (
+                      <TouchableOpacity
+                        style={styles.viewProductsBtn}
+                        onPress={() => {
+                          stopScanning();
+                          navigation.navigate('ProductDetails', {
+                            brand: 'Ralph Lauren',
+                            products: product.ralphLauren,
+                          });
+                        }}
+                      >
+                        <Text style={styles.viewProductsText}>View Ralph Lauren Products →</Text>
                       </TouchableOpacity>
                     )}
                   </View>
