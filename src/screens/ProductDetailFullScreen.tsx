@@ -25,9 +25,10 @@ const { width, height } = Dimensions.get('window');
 type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetailFull'>;
 
 export default function ProductDetailFullScreen({ route, navigation }: Props) {
-    const { product }: any = route.params;
+    const { product, brand }: any = route.params;
     const [selectedSize, setSelectedSize] = useState<string>('9');
     const [showARViewer, setShowARViewer] = useState<boolean>(false);
+    console.log(brand);
 
     const handleViewIn3D = () => {
         if (product.modelUrl) {
@@ -111,11 +112,11 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                     </View>
 
                     {/* Product Image - Large and Centered */}
-                    <View style={styles.imageSection}>
+                    <View style={route.params.brand === "Nike" ? styles.imageSection : styles.imageSectionRalph}>
                         <Image
                             source={product.image}
                             style={styles.productImageDetail}
-                            resizeMode="contain"
+                            resizeMode={brand === "Nike" ? "contain" : "stretch"}
                         />
                     </View>
                     <View style={{ alignItems: "center" }}>
@@ -155,7 +156,7 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                         <View style={styles.descriptionBox}>
                             <Text style={styles.descriptionTitle}>Description</Text>
                             <Text style={styles.descriptionText}>
-                                 {product.description}
+                                {product.description}
                             </Text>
                             {/* <TouchableOpacity>
                                 <Text style={styles.showMore}>Show Less</Text>
@@ -314,8 +315,13 @@ const styles = StyleSheet.create({
         height: scale(155),
         justifyContent: 'center',
         alignItems: 'center',
-        resizeMode: "cover",
         transform: [{ rotate: "-30deg" }],
+    },
+    imageSectionRalph: {
+        width: scale(333),
+        height: scale(250),
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     productImageDetail: {
         width: '100%',

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     View,
     Text,
@@ -26,18 +26,15 @@ const { width, height } = Dimensions.get('window');
 type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetails'>;
 
 export default function ProductDetailsScreen({ route, navigation }: Props) {
-    const { brand = "Nike", products = product.nike } = route.params ?? { brand: "Nike", products: product.nike };
+    const { brand = "Nike", products = product.ralphLauren } = route.params ?? { brand: "Nike", products: product.ralphLauren };
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const carouselRef = useRef<any>(null);
 
     const handleProductPress = (product: Product) => {
         // Navigate to the full detail screen
-        navigation.navigate('ProductDetailFull', { product });
+        navigation.navigate('ProductDetailFull', { product, brand: brand });
     };
     const insets = useSafeAreaInsets();
-    useEffect(()=>{
-        console.log("ProductDetailsScreen mounted", products);
-    },[])
     return (
         <ImageBackground source={images.homeBg} imageStyle={[styles.container, { opacity: 1 }]} style={styles.container} resizeMode='cover'>
             <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
@@ -91,21 +88,25 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
                                     >
                                         {/* Product Image */}
                                         <Image
-                                            source={product.image}
+                                            source={typeof product.image === 'number' ? product.image : { uri: product.image }}
                                             style={[
                                                 styles.cardProductImage,
                                                 {
-                                                    // width: isActive ? scale(300) : scale(240),
-                                                    // height: isActive ? scale(169) : scale(135),
-                                                    // top: isActive ? scale(-60) : scale(-48),
-                                                    // left: isActive ? scale(-20) : scale(-16),
+                                                    transform: [{ rotate: brand === "Nike" ? "-30deg" : "0deg" }],
+                                                    width: isActive ? scale(brand === "Nike" ? 300 : 220) : scale(brand === "Nike" ? 240 : 160),
+                                                    height: isActive ? scale(169) : scale(135),
+                                                    top: isActive ? scale(-60) : scale(-48),
+                                                    left:brand === "Nike"? (isActive ? scale(-20) : scale(-16)):0,
+                                                    alignSelf:"center"
                                                 }
                                             ]}
-                                            resizeMode="contain"
+                                            resizeMode={brand === "Nike" ? "contain": "stretch"}
+                                            onError={(error) => console.log('Image load error:', error.nativeEvent.error)}
+                                            onLoad={() => console.log('Image loaded successfully for:', product.title)}
                                         />
 
                                         {/* Product Info */}
-                                        <View style={[styles.cardContent, { top: isActive ? scale(-10) : scale(-5) }]}>
+                                        <View style={[styles.cardContent, { top: isActive ? scale(brand === "Nike" ? -10 : -35) : scale(brand === "Nike"?-5: -25) }]}>
                                             <Text numberOfLines={1} style={[styles.productTitle, { fontSize: isActive ? scale(21) : scale(16) }]}>
                                                 {product.title}
                                             </Text>
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
         height: scale(273),
         borderRadius: 24,
         // backgroundColor: '#2a2a2a',
-        overflow: 'visible',
+        overflow: 'visible', // Keep visible to show the rotated image
         // shadowColor: '#000',
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.5,
@@ -237,10 +238,10 @@ const styles = StyleSheet.create({
         width: scale(300),
         height: scale(169),
         // position: 'absolute',
-        overflow: 'visible',
-        // transform: [{ rotate: "-30deg" }],
-        // top: scale(-60),
-        // left: scale(-20),
+        // overflow: 'visible', // Removed - can cause rendering issues
+        transform: [{ rotate: "-30deg" }],
+        top: scale(-60),
+        left: scale(-20),
     },
     gradientOverlay: {
         // position: 'absolute',

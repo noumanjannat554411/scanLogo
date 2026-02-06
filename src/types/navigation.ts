@@ -16,5 +16,6 @@ export type RootStackParamList = {
   };
   ProductDetailFull: {
     product: Product;
+    brand: string;
   };
 };
