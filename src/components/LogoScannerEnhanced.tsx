@@ -60,6 +60,7 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
     if (isScanningActive) {
       startScanLineAnimation();
       startPulseAnimation();
+      console.log
     }
   }, [isScanningActive]);
 
