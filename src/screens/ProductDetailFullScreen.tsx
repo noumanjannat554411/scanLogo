@@ -57,6 +57,10 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
 
     return (
         <View style={styles.container}>
+            <LinearGradient
+                colors={['#1a1a1a', '#2d2d2d', '#1a1a1a']}
+                style={StyleSheet.absoluteFill}
+            />
             <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
 
             {/* Header */}
@@ -179,6 +183,59 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                                 </View>
                             </LinearGradient>
                         </TouchableOpacity>
+
+                        {/* Buy Now and Add to Cart Buttons */}
+                        <View style={styles.actionButtonsContainer}>
+                            <TouchableOpacity
+                                style={styles.buyNowButton}
+                                onPress={() => {
+                                    Alert.alert(
+                                        'Coming Soon',
+                                        'This feature will be available in the next phase.',
+                                        [
+                                            {
+                                                text: 'OK',
+                                                onPress: () => navigation.navigate('MallList'),
+                                            },
+                                        ]
+                                    );
+                                }}
+                            >
+                                <LinearGradient
+                                    colors={['#667eea', '#764ba2']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    style={styles.buttonGradient}
+                                >
+                                    <Text style={styles.buyNowText}>🛒 Buy Now</Text>
+                                </LinearGradient>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={styles.addToCartButton}
+                                onPress={() => {
+                                    Alert.alert(
+                                        'Coming Soon',
+                                        'This feature will be available in the next phase.',
+                                        [
+                                            {
+                                                text: 'OK',
+                                                onPress: () => navigation.navigate('MallList'),
+                                            },
+                                        ]
+                                    );
+                                }}
+                            >
+                                <LinearGradient
+                                    colors={['#4ade80', '#22c55e']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    style={styles.buttonGradient}
+                                >
+                                    <Text style={styles.addToCartText}>➕ Add to Cart</Text>
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </ScrollView>
             </View>
@@ -203,7 +260,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#1a1a1a',
     },
     safeArea: {
-        backgroundColor: '#1a1a1a',
+        backgroundColor: 'transparent',
     },
     header: {
         flexDirection: 'row',
@@ -211,7 +268,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 12,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: 'transparent',
     },
     backIcon: {
         fontSize: 28,
@@ -247,7 +304,7 @@ const styles = StyleSheet.create({
     // Left Sidebar Styles
     leftSidebar: {
         flexDirection: "row",
-        backgroundColor: '#1a1a1a',
+        backgroundColor: 'transparent',
         justifyContent: 'space-between',
         paddingHorizontal: scale(20),
     },
@@ -328,7 +385,7 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     infoSection: {
-        backgroundColor: '#1a1a1a',
+        backgroundColor: 'transparent',
         paddingHorizontal: 24,
         paddingTop: 24,
         paddingBottom: 40,
@@ -414,6 +471,51 @@ const styles = StyleSheet.create({
         fontSize: scale(18),
         fontWeight: '700',
         color: '#000',
+        letterSpacing: 0.5,
+    },
+    actionButtonsContainer: {
+        flexDirection: 'row',
+        gap: scale(12),
+        marginTop: scale(16),
+        paddingHorizontal: scale(24),
+        marginBottom: scale(20),
+    },
+    buyNowButton: {
+        flex: 1,
+        borderRadius: scale(14),
+        overflow: 'hidden',
+        elevation: 4,
+        shadowColor: '#667eea',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
+    addToCartButton: {
+        flex: 1,
+        borderRadius: scale(14),
+        overflow: 'hidden',
+        elevation: 4,
+        shadowColor: '#4ade80',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
+    buttonGradient: {
+        paddingVertical: scale(16),
+        paddingHorizontal: scale(20),
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    buyNowText: {
+        fontSize: scale(16),
+        fontWeight: '700',
+        color: '#fff',
+        letterSpacing: 0.5,
+    },
+    addToCartText: {
+        fontSize: scale(16),
+        fontWeight: '700',
+        color: '#fff',
         letterSpacing: 0.5,
     },
 });

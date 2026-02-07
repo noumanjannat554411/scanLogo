@@ -37,7 +37,7 @@ export default function ProductDetailsScreen({ route, navigation }: Props) {
     const insets = useSafeAreaInsets();
     return (
         <ImageBackground source={images.homeBg} imageStyle={[styles.container, { opacity: 1 }]} style={styles.container} resizeMode='cover'>
-            <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
                 {/* Header */}
                 {/* < edges={['top']} style={styles.safeArea}> */}
                 <View style={[styles.header, { paddingTop: insets.top }]}>
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
         borderRadius: 24,
     },
     cardProductImage: {

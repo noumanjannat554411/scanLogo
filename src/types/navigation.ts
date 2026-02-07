@@ -9,6 +9,10 @@ export interface Product {
 
 export type RootStackParamList = {
   Splash: undefined;
+  MallList: undefined;
+  BrandList: {
+    mallName: string;
+  };
   Scanner: undefined;
   ProductDetails: {
     brand: string;

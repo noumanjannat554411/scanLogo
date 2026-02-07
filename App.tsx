@@ -11,6 +11,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SplashScreen from './src/screens/SplashScreen';
+import MallListScreen from './src/screens/MallListScreen';
+import BrandListScreen from './src/screens/BrandListScreen';
 import LogoScannerEnhanced from './src/components/LogoScannerEnhanced';
 import ProductDetailsScreen from './src/screens/ProductDetailsScreen';
 import ProductDetailFullScreen from './src/screens/ProductDetailFullScreen';
@@ -37,6 +39,20 @@ function App() {
               component={SplashScreen}
               options={{
                 animation: 'fade',
+              }}
+            />
+            <Stack.Screen
+              name="MallList"
+              component={MallListScreen}
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
+            <Stack.Screen
+              name="BrandList"
+              component={BrandListScreen}
+              options={{
+                animation: 'slide_from_right',
               }}
             />
             <Stack.Screen
