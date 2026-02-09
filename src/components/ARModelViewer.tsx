@@ -60,9 +60,37 @@ export default function ARModelViewer({
                 console.log('📝 Processing string modelUrl:', modelUrl);
                 // Check if it's a URL or local file path
                 if (modelUrl.startsWith('http://') || modelUrl.startsWith('https://')) {
-                    console.log('🌐 Using remote URL:', modelUrl);
-                    // It's a remote URL, use it directly
-                    setBase64Model(modelUrl);
+                    console.log('🌐 Downloading remote model:', modelUrl);
+                    
+                    // Download the model and convert to base64 for WebView
+                    // This bypasses CORS issues in WebView
+                    const tempPath = `${RNFS.CachesDirectoryPath}/temp_model_${Date.now()}.glb`;
+                    console.log('📥 Downloading to:', tempPath);
+                    
+                    const downloadResult = await RNFS.downloadFile({
+                        fromUrl: modelUrl,
+                        toFile: tempPath,
+                        background: false,
+                        discretionary: false,
+                        cacheable: true,
+                        progress: (res) => {
+                            const progress = (res.bytesWritten / res.contentLength) * 100;
+                            console.log(`📊 Download progress: ${Math.round(progress)}%`);
+                        }
+                    }).promise;
+
+                    if (downloadResult.statusCode !== 200) {
+                        throw new Error(`Download failed with status: ${downloadResult.statusCode}`);
+                    }
+
+                    console.log('✅ Download complete, reading as base64...');
+                    const base64Data = await RNFS.readFile(tempPath, 'base64');
+                    console.log('✅ File read successfully, size:', base64Data.length, 'bytes');
+                    
+                    // Clean up temp file
+                    await RNFS.unlink(tempPath).catch(() => {});
+                    
+                    setBase64Model(`data:model/gltf-binary;base64,${base64Data}`);
                 } else {
                     console.log('📁 Processing local file path');
                     // It's a local file path, convert to base64
@@ -91,6 +119,11 @@ export default function ARModelViewer({
             setIsLoading(false);
         }
     };
+
+    // Properly escape the model URL for HTML
+    const modelUrlString = String(base64Model || modelUrl);
+    const escapedModelUrl = modelUrlString.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const escapedTitle = productTitle.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -216,34 +249,53 @@ export default function ARModelViewer({
             max-width: 80%;
             z-index: 5;
         }
+
+        .error-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff4444;
+            font-size: 14px;
+            background: rgba(255, 68, 68, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 80%;
+            text-align: center;
+            z-index: 10;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="title">${productTitle}</div>
+        <div class="title">${escapedTitle}</div>
     </div>
 
     <div class="loading" id="loading">Loading 3D Model...</div>
+    <div class="error-display" id="errorDisplay"></div>
 
     <model-viewer
         id="modelViewer"
-        src="${base64Model || modelUrl}"
+        src="${escapedModelUrl}"
         ar
         ar-modes="webxr scene-viewer quick-look"
         camera-controls
         touch-action="pan-y"
         auto-rotate
         auto-rotate-delay="0"
-        rotation-per-second="30deg"
+        rotation-per-second="20deg"
         shadow-intensity="1"
         environment-image="neutral"
         exposure="1"
         shadow-softness="0.5"
-        camera-orbit="0deg 75deg 2.5m"
-        min-camera-orbit="auto auto 1m"
-        max-camera-orbit="auto auto 10m"
-        field-of-view="30deg"
-        alt="3D model of ${productTitle}"
+        camera-orbit="0deg 75deg auto"
+        min-camera-orbit="auto auto auto"
+        max-camera-orbit="auto auto auto"
+        field-of-view="45deg"
+        max-field-of-view="90deg"
+        min-field-of-view="20deg"
+        alt="3D model of ${escapedTitle}"
     >
         <button class="ar-button" slot="ar-button">
             <span>📱</span>
@@ -263,21 +315,35 @@ export default function ARModelViewer({
     <script>
         const modelViewer = document.getElementById('modelViewer');
         const loading = document.getElementById('loading');
+        const errorDisplay = document.getElementById('errorDisplay');
         let isRotating = true;
+
+        console.log('🔵 Model Viewer initialized with URL:', modelViewer.src);
 
         modelViewer.addEventListener('load', () => {
             loading.style.display = 'none';
-            console.log('Model loaded successfully');
+            errorDisplay.style.display = 'none';
+            console.log('✅ Model loaded successfully');
         });
 
         modelViewer.addEventListener('error', (event) => {
-            loading.textContent = 'Error loading model';
-            console.error('Model loading error:', event);
+            loading.style.display = 'none';
+            errorDisplay.style.display = 'block';
+            errorDisplay.textContent = 'Failed to load 3D model. Please check your connection and try again.';
+            console.error('❌ Model loading error:', event);
+            console.error('Model URL:', modelViewer.src);
+        });
+
+        modelViewer.addEventListener('progress', (event) => {
+            const progress = event.detail.totalProgress * 100;
+            loading.textContent = 'Loading 3D Model... ' + Math.round(progress) + '%';
+            console.log('📊 Loading progress:', progress + '%');
         });
 
         function resetCamera() {
-            modelViewer.cameraOrbit = '0deg 75deg 2.5m';
-            modelViewer.fieldOfView = '30deg';
+            modelViewer.cameraOrbit = '0deg 75deg auto';
+            modelViewer.fieldOfView = '45deg';
+            modelViewer.resetTurntableRotation();
         }
 
         function toggleRotation() {
@@ -294,7 +360,7 @@ export default function ARModelViewer({
         // Handle AR session
         modelViewer.addEventListener('ar-status', (event) => {
             if (event.detail.status === 'session-started') {
-                console.log('AR session started');
+                console.log('🎯 AR session started');
             }
         });
     </script>
@@ -341,9 +407,24 @@ export default function ARModelViewer({
                         allowsInlineMediaPlayback={true}
                         mediaPlaybackRequiresUserAction={false}
                         allowFileAccess={true}
+                        allowUniversalAccessFromFileURLs={true}
+                        allowFileAccessFromFileURLs={true}
                         originWhitelist={['*']}
                         mixedContentMode="always"
                         startInLoadingState={true}
+                        onMessage={(event) => {
+                            console.log('WebView message:', event.nativeEvent.data);
+                        }}
+                        onLoadStart={() => {
+                            console.log('🔵 WebView started loading');
+                        }}
+                        onLoadEnd={() => {
+                            console.log('✅ WebView finished loading');
+                        }}
+                        onHttpError={(syntheticEvent) => {
+                            const { nativeEvent } = syntheticEvent;
+                            console.error('❌ HTTP Error:', nativeEvent.statusCode, nativeEvent.description);
+                        }}
                         renderLoading={() => (
                             <View style={styles.loadingContainer}>
                                 <ActivityIndicator size="large" color="#FF6200" />
@@ -352,7 +433,11 @@ export default function ARModelViewer({
                         )}
                         onError={(syntheticEvent: any) => {
                             const { nativeEvent } = syntheticEvent;
-                            console.warn('WebView error: ', nativeEvent);
+                            console.error('❌ WebView error:', nativeEvent);
+                            setError('Failed to load AR viewer: ' + (nativeEvent.description || 'Unknown error'));
+                        }}
+                        onConsoleMessage={(event: any) => {
+                            console.log('WebView Console:', event.nativeEvent.message);
                         }}
                     />
                 )}

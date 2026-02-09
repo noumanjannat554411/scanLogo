@@ -8,6 +8,11 @@ export const models = {
     shoe4: require('./shoe4.glb'), // Air Jordan 1 Low
     shoe5: require('./shoe5.glb'), // Air Jordan 1 Mid (Women's)
     shoe6: require('./shoe6.glb'), // Air Jordan 1 Mid SE
+    modal1: require('./modal1.glb'),
+    modal2: require('./modal2.glb'),
+    modal3: require('./modal3.glb'),
+    modal4: require('./modal4.glb'),
+
 };
 
 // For now, using a placeholder model URL
