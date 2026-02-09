@@ -16,8 +16,9 @@ import {
 } from 'react-native-vision-camera';
 import { detectLogos, Logo } from '../services/visionApi';
 import RNFS from 'react-native-fs';
-import { product } from '../assets/data/arrays/data';
+import { constructionCompanies, getCompanyProjects, CONSTRUCTION_COMPANIES } from '../assets/data/arrays/construction-data';
 import LinearGradient from 'react-native-linear-gradient';
+import ARModelViewer from './ARModelViewer';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,6 +34,10 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
   const [scanStatus, setScanStatus] = useState<string>('Tap to start scanning');
   const [scanProgress, setScanProgress] = useState(0);
   const [scanAttempts, setScanAttempts] = useState(0);
+  
+  // AR Viewer State
+  const [showARViewer, setShowARViewer] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<{url: string, title: string} | null>(null);
   
   const cameraRef = useRef<Camera>(null);
   const lastScanTimeRef = useRef<number>(0);
@@ -220,36 +225,58 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
         startGlowAnimation();
         isProcessingRef.current = false;
         
-        // Check for Nike logo
-        const nikeDetected = logos.find(logo => 
-          logo.description.toLowerCase().includes('nike')
-        );
-        
-        // Check for Ralph Lauren logo
-        const ralphLauren = logos.find(logo => {
+        // Check for construction company logos
+        let detectedCompany: string | null = null;
+        let companyProjects = null;
+
+        for (const logo of logos) {
           const desc = logo.description.toLowerCase();
-          return desc.includes('ralph lauren') || 
-                 desc.includes('polo') || 
-                 desc.includes('ralph');
-        });
+          console.log('🏗️ Checking logo:', desc);
+
+          // Check for Bechtel
+          if (desc.includes('bechtel')) {
+            detectedCompany = 'Bechtel';
+            companyProjects = constructionCompanies.bechtel;
+            break;
+          }
+          // Check for Turner Construction
+          else if (desc.includes('turner')) {
+            detectedCompany = 'Turner Construction';
+            companyProjects = constructionCompanies.turner;
+            break;
+          }
+          // Check for Skanska
+          else if (desc.includes('skanska')) {
+            detectedCompany = 'Skanska';
+            companyProjects = constructionCompanies.skanska;
+            break;
+          }
+          // Check for Fluor
+          else if (desc.includes('fluor')) {
+            detectedCompany = 'Fluor Corporation';
+            companyProjects = constructionCompanies.fluor;
+            break;
+          }
+        }
         
-        if (nikeDetected && navigation) {
+        if (detectedCompany && companyProjects) {
+          console.log('✅ Detected construction company:', detectedCompany);
+          // Pick a random building from the company's projects
+          const randomProject = companyProjects[Math.floor(Math.random() * companyProjects.length)];
+          
           setTimeout(() => {
             stopScanning();
-            navigation.navigate('ProductDetails', {
-              brand: 'Nike',
-              products: product.nike,
+            // Open AR viewer directly with the building model
+            setSelectedModel({
+              url: randomProject.modelUrl,
+              title: `${detectedCompany} - ${randomProject.title}`
             });
-          }, 1000);
-        } else if (ralphLauren && navigation) {
-          setTimeout(() => {
-            stopScanning();
-            navigation.navigate('ProductDetails', {
-              brand: 'Ralph Lauren',
-              products: product.ralphLauren,
-            });
+            setShowARViewer(true);
           }, 1000);
         } else {
+          // Show detected logo name even if not recognized
+          console.log('⚠️ Detected logo but not a recognized construction company');
+          setScanStatus(`Found: ${logos[0].description} (Not a construction company)`);
           stopScanning();
         }
       } else {
@@ -339,194 +366,178 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
   });
 
   return (
-    <View style={styles.container}>
-      {/* Camera */}
-      <View style={styles.cameraContainer}>
-        <Camera
-          ref={cameraRef}
-          style={styles.camera}
-          device={device}
-          isActive={true}
-          photo={true}
-        />
-        
-        {/* Overlay with scanning frame */}
-        <View style={styles.overlay}>
-          {/* Top gradient overlay */}
-          <LinearGradient
-            colors={['rgba(0,0,0,0.7)', 'transparent']}
-            style={styles.topOverlay}
-          >
-            <Text style={styles.headerTitle}>Brand Scanner</Text>
-            <Text style={styles.headerSubtitle}>Point at any brand logo</Text>
-          </LinearGradient>
-
-          {/* Scanning Frame */}
-          <View style={styles.scanArea}>
-            <Animated.View
-              style={[
-                styles.scanFrame,
-                {
-                  transform: [{ scale: isScanningActive ? pulseAnim : 1 }],
-                  borderColor: detectedLogos.length > 0 ? '#4CAF50' : '#00E5FF',
-                },
-              ]}
-            >
-              {/* Corner brackets */}
-              <View style={[styles.corner, styles.cornerTopLeft]} />
-              <View style={[styles.corner, styles.cornerTopRight]} />
-              <View style={[styles.corner, styles.cornerBottomLeft]} />
-              <View style={[styles.corner, styles.cornerBottomRight]} />
-
-              {/* Scanning line animation */}
-              {isScanningActive && (
-                <Animated.View
-                  style={[
-                    styles.scanLine,
-                    {
-                      transform: [{ translateY: scanLineTranslateY }],
-                    },
-                  ]}
-                >
-                  <LinearGradient
-                    colors={['transparent', '#00E5FF', 'transparent']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 1 }}
-                    style={styles.scanLineGradient}
-                  />
-                </Animated.View>
-              )}
-
-              {/* Center hint */}
-              {!isScanningActive && (
-                <View style={styles.centerHint}>
-                  <Text style={styles.centerHintText}>📸</Text>
-                  <Text style={styles.centerHintLabel}>Align logo here</Text>
-                </View>
-              )}
-
-              {/* Glow effect when detected */}
-              {detectedLogos.length > 0 && (
-                <Animated.View
-                  style={[
-                    styles.glowEffect,
-                    { opacity: glowAnim },
-                  ]}
-                />
-              )}
-            </Animated.View>
-
-            {/* Status indicator */}
-            <View style={styles.statusIndicator}>
-              <Text style={styles.statusText}>{scanStatus}</Text>
-              {isScanning && (
-                <View style={styles.progressBarContainer}>
-                  <View style={[styles.progressBar, { width: `${scanProgress * 100}%` }]} />
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* Bottom gradient overlay */}
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.8)']}
-            style={styles.bottomOverlay}
+    <>
+      <View style={styles.container}>
+        {/* Camera */}
+        <View style={styles.cameraContainer}>
+          <Camera
+            ref={cameraRef}
+            style={styles.camera}
+            device={device}
+            isActive={!showARViewer}
+            photo={true}
           />
+          
+          {/* Overlay with scanning frame */}
+          <View style={styles.overlay}>
+            {/* Top gradient overlay */}
+            <LinearGradient
+              colors={['rgba(0,0,0,0.7)', 'transparent']}
+              style={styles.topOverlay}
+            >
+              <Text style={styles.headerTitle}>🏗️ Construction Scanner</Text>
+              <Text style={styles.headerSubtitle}>Point at construction company logo</Text>
+            </LinearGradient>
+
+            {/* Scanning Frame */}
+            <View style={styles.scanArea}>
+              <Animated.View
+                style={[
+                  styles.scanFrame,
+                  {
+                    transform: [{ scale: isScanningActive ? pulseAnim : 1 }],
+                    borderColor: detectedLogos.length > 0 ? '#4CAF50' : '#00E5FF',
+                  },
+                ]}
+              >
+                {/* Corner brackets */}
+                <View style={[styles.corner, styles.cornerTopLeft]} />
+                <View style={[styles.corner, styles.cornerTopRight]} />
+                <View style={[styles.corner, styles.cornerBottomLeft]} />
+                <View style={[styles.corner, styles.cornerBottomRight]} />
+
+                {/* Scanning line animation */}
+                {isScanningActive && (
+                  <Animated.View
+                    style={[
+                      styles.scanLine,
+                      {
+                        transform: [{ translateY: scanLineTranslateY }],
+                      },
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={['transparent', '#00E5FF', 'transparent']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 0, y: 1 }}
+                      style={styles.scanLineGradient}
+                    />
+                  </Animated.View>
+                )}
+
+                {/* Center hint */}
+                {!isScanningActive && (
+                  <View style={styles.centerHint}>
+                    <Text style={styles.centerHintText}>📸</Text>
+                    <Text style={styles.centerHintLabel}>Align logo here</Text>
+                  </View>
+                )}
+
+                {/* Glow effect when detected */}
+                {detectedLogos.length > 0 && (
+                  <Animated.View
+                    style={[
+                      styles.glowEffect,
+                      { opacity: glowAnim },
+                    ]}
+                  />
+                )}
+              </Animated.View>
+
+              {/* Status indicator */}
+              <View style={styles.statusIndicator}>
+                <Text style={styles.statusText}>{scanStatus}</Text>
+                {isScanning && (
+                  <View style={styles.progressBarContainer}>
+                    <View style={[styles.progressBar, { width: `${scanProgress * 100}%` }]} />
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Bottom gradient overlay */}
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.8)']}
+              style={styles.bottomOverlay}
+            />
+          </View>
+        </View>
+
+        {/* Control Panel */}
+        <View style={styles.controlPanel}>
+          {/* Scan Button */}
+          <TouchableOpacity
+            style={[
+              styles.scanButton,
+              isScanningActive && styles.scanButtonActive,
+            ]}
+            onPress={isScanningActive ? stopScanning : startScanning}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={isScanningActive ? ['#FF5252', '#FF1744'] : ['#00E5FF', '#00B8D4']}
+              style={styles.scanButtonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              {isScanning ? (
+                <ActivityIndicator size="large" color="#fff" />
+              ) : (
+                <>
+                  <Text style={styles.scanButtonIcon}>
+                    {isScanningActive ? '⏸' : '▶'}
+                  </Text>
+                  <Text style={styles.scanButtonText}>
+                    {isScanningActive ? 'Stop Scanning' : 'Start Scanning'}
+                  </Text>
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* Results Panel */}
+          {detectedLogos.length > 0 && (
+            <View style={styles.resultsPanel}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.resultsScroll}
+              >
+                {detectedLogos.map((logo, index) => {
+                  return (
+                    <View key={index} style={styles.logoCard}>
+                      <View style={styles.logoCardHeader}>
+                        <Text style={styles.logoName}>{logo.description}</Text>
+                        <View style={styles.confidenceBadge}>
+                          <Text style={styles.confidenceText}>
+                            {(logo.score * 100).toFixed(0)}%
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
         </View>
       </View>
 
-      {/* Control Panel */}
-      <View style={styles.controlPanel}>
-        {/* Scan Button */}
-        <TouchableOpacity
-          style={[
-            styles.scanButton,
-            isScanningActive && styles.scanButtonActive,
-          ]}
-          onPress={isScanningActive ? stopScanning : startScanning}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={isScanningActive ? ['#FF5252', '#FF1744'] : ['#00E5FF', '#00B8D4']}
-            style={styles.scanButtonGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            {isScanning ? (
-              <ActivityIndicator size="large" color="#fff" />
-            ) : (
-              <>
-                <Text style={styles.scanButtonIcon}>
-                  {isScanningActive ? '⏸' : '▶'}
-                </Text>
-                <Text style={styles.scanButtonText}>
-                  {isScanningActive ? 'Stop Scanning' : 'Start Scanning'}
-                </Text>
-              </>
-            )}
-          </LinearGradient>
-        </TouchableOpacity>
-
-        {/* Results Panel */}
-        {detectedLogos.length > 0 && (
-          <View style={styles.resultsPanel}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.resultsScroll}
-            >
-              {detectedLogos.map((logo, index) => {
-                const isNike = logo.description.toLowerCase().includes('nike');
-                const isRalphLauren = logo.description.toLowerCase().includes('ralph lauren') || 
-                                      logo.description.toLowerCase().includes('polo') ||
-                                      logo.description.toLowerCase().includes('ralph');
-                
-                return (
-                  <View key={index} style={styles.logoCard}>
-                    <View style={styles.logoCardHeader}>
-                      <Text style={styles.logoName}>{logo.description}</Text>
-                      <View style={styles.confidenceBadge}>
-                        <Text style={styles.confidenceText}>
-                          {(logo.score * 100).toFixed(0)}%
-                        </Text>
-                      </View>
-                    </View>
-                    {isNike && navigation && (
-                      <TouchableOpacity
-                        style={styles.viewProductsBtn}
-                        onPress={() => {
-                          stopScanning();
-                          navigation.navigate('ProductDetails', {
-                            brand: 'Nike',
-                            products: product.nike,
-                          });
-                        }}
-                      >
-                        <Text style={styles.viewProductsText}>View Nike Products →</Text>
-                      </TouchableOpacity>
-                    )}
-                    {isRalphLauren && navigation && (
-                      <TouchableOpacity
-                        style={styles.viewProductsBtn}
-                        onPress={() => {
-                          stopScanning();
-                          navigation.navigate('ProductDetails', {
-                            brand: 'Ralph Lauren',
-                            products: product.ralphLauren,
-                          });
-                        }}
-                      >
-                        <Text style={styles.viewProductsText}>View Ralph Lauren Products →</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </View>
-        )}
-      </View>
-    </View>
+      {/* AR Model Viewer */}
+      {selectedModel && (
+        <ARModelViewer
+          visible={showARViewer}
+          modelUrl={selectedModel.url}
+          productTitle={selectedModel.title}
+          onClose={() => {
+            setShowARViewer(false);
+            setSelectedModel(null);
+            setScanStatus('Tap to start scanning');
+            setDetectedLogos([]);
+          }}
+        />
+      )}
+    </>
   );
 }
 

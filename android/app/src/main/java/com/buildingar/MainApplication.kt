@@ -1,4 +1,4 @@
-package com.scanlogo
+package com.buildingar
 
 import android.app.Application
 import com.facebook.react.PackageList

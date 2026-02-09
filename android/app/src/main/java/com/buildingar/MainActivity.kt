@@ -1,4 +1,4 @@
-package com.scanlogo
+package com.buildingar
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

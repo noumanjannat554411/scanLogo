@@ -195,7 +195,7 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                                         [
                                             {
                                                 text: 'OK',
-                                                onPress: () => navigation.navigate('MallList'),
+                                                // onPress: () => navigation.navigate('MallList'),
                                             },
                                         ]
                                     );
@@ -220,7 +220,7 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                                         [
                                             {
                                                 text: 'OK',
-                                                onPress: () => navigation.navigate('MallList'),
+                                                // onPress: () => navigation.navigate('MallList'),
                                             },
                                         ]
                                     );
