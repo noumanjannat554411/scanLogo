@@ -56,12 +56,12 @@ class ARViewerModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
 
             val testIntent = Intent(Intent.ACTION_VIEW)
             testIntent.data = Uri.parse("https://arvr.google.com/scene-viewer/1.0")
-            testIntent.setPackage("com.google.ar.core")
+            testIntent.setPackage("com.google.android.googlequicksearchbox")
             
             val isSupported = testIntent.resolveActivity(activity.packageManager) != null
-            promise.resolve(isSupported)
+            promise.resolve("isSupported khan" + isSupported)
         } catch (e: Exception) {
-            promise.resolve(false)
+            promise.resolve(" khan")
         }
     }
 }
