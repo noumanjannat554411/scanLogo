@@ -19,6 +19,7 @@ import { images } from '../assets/images/images';
 import { scale } from '../utils/functions';
 import LinearGradient from 'react-native-linear-gradient';
 import NativeARViewer from '../components/NativeARViewer';
+import ARViewerModule from '../modules/ARViewerModule';
 
 const { width, height } = Dimensions.get('window');
 
@@ -53,6 +54,44 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                 <Text style={styles.reviewCount}>181 Reviews</Text>
             </View>
         );
+    };
+
+    const openARViewer = async () => {
+        try {
+            console.log('🚀 Opening native AR viewer with:', product.modelUrl);
+
+            // Check if AR is supported
+            const isSupported = await ARViewerModule.isARSupported();
+            console.log('📱 AR Support:', isSupported);
+
+            if (!isSupported) {
+                Alert.alert(
+                    'AR Not Supported',
+                    'Google ARCore is required to view models in AR. Please install Google ARCore from the Play Store.',
+                    [
+                        { text: 'OK', }
+                    ]
+                );
+                return;
+            }
+
+            // Open AR viewer
+            const result = await ARViewerModule.openARView(product.modelUrl, product.title);
+            console.log('✅ AR Viewer result:', result);
+            setTimeout(() => {
+                // onClose();
+            }, 500);
+
+        } catch (error) {
+            console.error('❌ Error opening AR viewer:', error);
+            Alert.alert(
+                'Error',
+                'Failed to open AR viewer. Please try again.',
+                [
+                    { text: 'OK', }
+                ]
+            );
+        }
     };
 
     return (
@@ -171,7 +210,7 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
 
                         <TouchableOpacity
                             style={styles.view3DButton}
-                            onPress={handleViewIn3D}
+                            onPress={openARViewer}
                         >
                             <LinearGradient
                                 colors={['#FF6200', '#FFC082', '#FF6200']}
@@ -195,7 +234,7 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                                         [
                                             {
                                                 text: 'OK',
-                                                onPress: () => navigation.navigate('MallList'),
+                                                // onPress: () => navigation.navigate('MallList'),
                                             },
                                         ]
                                     );
@@ -220,7 +259,7 @@ export default function ProductDetailFullScreen({ route, navigation }: Props) {
                                         [
                                             {
                                                 text: 'OK',
-                                                onPress: () => navigation.navigate('MallList'),
+                                                // onPress: () => navigation.navigate('MallList'),
                                             },
                                         ]
                                     );
