@@ -28,8 +28,10 @@ class ARViewerModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
             val intentUri = Uri.parse("https://arvr.google.com/scene-viewer/1.0")
                 .buildUpon()
                 .appendQueryParameter("file", modelUrl)
-                .appendQueryParameter("mode", "ar_only")
+                .appendQueryParameter("mode", "ar_preferred")
                 .appendQueryParameter("title", title)
+                .appendQueryParameter("resizable", "true")
+                .appendQueryParameter("enable_vertical_placement", "true")
                 .build()
             
             sceneViewerIntent.data = intentUri

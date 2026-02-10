@@ -505,6 +505,14 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
                 contentContainerStyle={styles.resultsScroll}
               >
                 {detectedLogos.map((logo, index) => {
+                  // Check if this is a construction company
+                  const companyName = logo.description.toLowerCase();
+                  const isConstructionCompany = 
+                    companyName.includes('bechtel') ||
+                    companyName.includes('turner') ||
+                    companyName.includes('skanska') ||
+                    companyName.includes('fluor');
+                  
                   return (
                     <View key={index} style={styles.logoCard}>
                       <View style={styles.logoCardHeader}>
@@ -515,6 +523,45 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
                           </Text>
                         </View>
                       </View>
+                      
+                      {/* AR Button for Construction Companies */}
+                      {isConstructionCompany && (
+                        <TouchableOpacity
+                          style={styles.arButton}
+                          onPress={() => {
+                            // Get the company's model
+                            let detectedCompany = '';
+                            if (companyName.includes('bechtel')) detectedCompany = 'Bechtel';
+                            else if (companyName.includes('turner')) detectedCompany = 'Turner';
+                            else if (companyName.includes('skanska')) detectedCompany = 'Skanska';
+                            else if (companyName.includes('fluor')) detectedCompany = 'Fluor';
+                            
+                            if (detectedCompany) {
+                              const companyProjects = getCompanyProjects(detectedCompany);
+                              if (companyProjects && companyProjects.length > 0) {
+                                const randomProject = companyProjects[Math.floor(Math.random() * companyProjects.length)];
+                                
+                                setSelectedModel({
+                                  url: randomProject.modelUrl,
+                                  title: `${detectedCompany} - ${randomProject.title}`
+                                });
+                                setShowARViewer(true);
+                              }
+                            }
+                          }}
+                          activeOpacity={0.8}
+                        >
+                          <LinearGradient
+                            colors={['#00E5FF', '#00B8D4']}
+                            style={styles.arButtonGradient}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                          >
+                            <Text style={styles.arButtonIcon}>🏢</Text>
+                            <Text style={styles.arButtonText}>View in 3D AR</Text>
+                          </LinearGradient>
+                        </TouchableOpacity>
+                      )}
                     </View>
                   );
                 })}
@@ -812,5 +859,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#667eea',
+  },
+  arButton: {
+    marginTop: 12,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#00E5FF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  arButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  arButtonIcon: {
+    fontSize: 24,
+  },
+  arButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+    letterSpacing: 0.5,
   },
 });
