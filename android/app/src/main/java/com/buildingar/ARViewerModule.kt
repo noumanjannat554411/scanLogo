@@ -23,12 +23,13 @@ class ARViewerModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
                 return
             }
 
-            // Use Google Scene Viewer for AR (best compatibility)
+            // Use Scene Viewer with 3D preview mode
+            // This shows 3D model first with "View in your space" AR button
             val sceneViewerIntent = Intent(Intent.ACTION_VIEW)
             val intentUri = Uri.parse("https://arvr.google.com/scene-viewer/1.0")
                 .buildUpon()
                 .appendQueryParameter("file", modelUrl)
-                .appendQueryParameter("mode", "ar_preferred")
+                .appendQueryParameter("mode", "3d_preferred")  // Shows 3D first, then AR button
                 .appendQueryParameter("title", title)
                 .appendQueryParameter("resizable", "true")
                 .appendQueryParameter("enable_vertical_placement", "true")
@@ -38,9 +39,9 @@ class ARViewerModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
             sceneViewerIntent.setPackage("com.google.android.googlequicksearchbox")
             
             activity.startActivity(sceneViewerIntent)
-            promise.resolve("AR Viewer opened successfully")
+            promise.resolve("3D Viewer opened successfully")
         } catch (e: Exception) {
-            promise.reject("AR_ERROR", "Failed to open AR viewer: ${e.message}", e)
+            promise.reject("AR_ERROR", "Failed to open 3D viewer: ${e.message}", e)
         }
     }
 
