@@ -12,8 +12,8 @@ export const constructionCompanies = {
             price: "$250M",
             type: "Commercial Building",
             url: "https://www.bechtel.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2F111w57_-_steinway_tower.glb?alt=media&token=ce45df13-9861-49a4-8006-1ae165e095d8",
-            modelLocalFile: models.shoe1,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal1.glb",
+            modelLocalFile: models.modal1,
             description: "A state-of-the-art 40-story commercial office complex featuring sustainable design, LEED Platinum certification, smart building technology, and premium amenities for modern businesses."
         },
         {
@@ -23,8 +23,8 @@ export const constructionCompanies = {
             price: "$180M",
             type: "Residential Building",
             url: "https://www.bechtel.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2Fmodern_tower_office_apartment_building.glb?alt=media&token=c98ddb94-86eb-4fdd-8a35-a317a12bc2f0",
-            modelLocalFile: models.shoe2,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal2.glb",
+            modelLocalFile: models.modal2,
             description: "An exclusive 35-floor luxury residential tower with panoramic city views, rooftop gardens, infinity pool, private gym, and concierge services."
         },
         {
@@ -34,8 +34,8 @@ export const constructionCompanies = {
             price: "$320M",
             type: "Commercial Complex",
             url: "https://www.bechtel.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2Ffuturistic_building.glb?alt=media&token=e9267072-1be1-4a51-8300-9f699fb7e284",
-            modelLocalFile: models.shoe3,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal3.glb",
+            modelLocalFile: models.modal3,
             description: "A massive 5-level shopping and entertainment destination featuring 200+ retail stores, cinema complex, food court, and indoor theme park."
         },
         {
@@ -45,8 +45,8 @@ export const constructionCompanies = {
             price: "$420M",
             type: "Corporate Campus",
             url: "https://www.bechtel.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2Fbuildings_for_3d_printing.glb?alt=media&token=d667bdf7-88cf-4621-821a-fa7e3a20fb78",
-            modelLocalFile: models.shoe4,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal4.glb",
+            modelLocalFile: models.modal4,
             description: "An innovative tech campus spanning 50 acres with multiple buildings, research facilities, collaboration spaces, and eco-friendly design."
         }
     ],
@@ -60,8 +60,8 @@ export const constructionCompanies = {
             price: "$185M",
             type: "Public Facility",
             url: "https://www.turnerconstruction.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2F111w57_-_steinway_tower.glb?alt=media&token=ce45df13-9861-49a4-8006-1ae165e095d8",
-            modelLocalFile: models.shoe1,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal1.glb",
+            modelLocalFile: models.modal1,
             description: "Massive convention center expansion with 150,000 sq ft of exhibition space, state-of-the-art meeting rooms, and modern hospitality facilities."
         },
         {
@@ -71,8 +71,8 @@ export const constructionCompanies = {
             price: "$95M",
             type: "Educational Facility",
             url: "https://www.turnerconstruction.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2Fmodern_tower_office_apartment_building.glb?alt=media&token=c98ddb94-86eb-4fdd-8a35-a317a12bc2f0",
-            modelLocalFile: models.shoe2,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal2.glb",
+            modelLocalFile: models.modal2,
             description: "A cutting-edge science and research facility featuring advanced laboratories, collaborative learning spaces, and sustainable design elements."
         },
         {
@@ -82,8 +82,8 @@ export const constructionCompanies = {
             price: "$140M",
             type: "Sports Facility",
             url: "https://www.turnerconstruction.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2Ffuturistic_building.glb?alt=media&token=e9267072-1be1-4a51-8300-9f699fb7e284",
-            modelLocalFile: models.shoe3,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal3.glb",
+            modelLocalFile: models.modal3,
             description: "Multi-purpose sports complex with Olympic-size pool, basketball courts, fitness center, and spectator seating for 10,000 people."
         },
         {
@@ -93,8 +93,8 @@ export const constructionCompanies = {
             price: "$210M",
             type: "Technology Infrastructure",
             url: "https://www.turnerconstruction.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2Fbuildings_for_3d_printing.glb?alt=media&token=d667bdf7-88cf-4621-821a-fa7e3a20fb78",
-            modelLocalFile: models.shoe4,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal4.glb",
+            modelLocalFile: models.modal4,
             description: "Enterprise-grade data center with redundant power systems, advanced cooling technology, and security features for mission-critical operations."
         }
     ],
@@ -108,8 +108,8 @@ export const constructionCompanies = {
             price: "$380M",
             type: "Infrastructure",
             url: "https://www.skanska.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2F111w57_-_steinway_tower.glb?alt=media&token=ce45df13-9861-49a4-8006-1ae165e095d8",
-            modelLocalFile: models.shoe1,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal1.glb",
+            modelLocalFile: models.modal1,
             description: "Modern suspension bridge spanning 2.5 km with smart monitoring systems, seismic protection, and sustainable construction methods."
         },
         {
@@ -119,8 +119,8 @@ export const constructionCompanies = {
             price: "$275M",
             type: "Transportation Hub",
             url: "https://www.skanska.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2Fmodern_tower_office_apartment_building.glb?alt=media&token=c98ddb94-86eb-4fdd-8a35-a317a12bc2f0",
-            modelLocalFile: models.shoe2,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal2.glb",
+            modelLocalFile: models.modal2,
             description: "Integrated transit hub connecting metro, bus, and light rail systems with retail spaces and modern passenger amenities."
         },
         {
@@ -130,8 +130,8 @@ export const constructionCompanies = {
             price: "$450M",
             type: "Energy Infrastructure",
             url: "https://www.skanska.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2Ffuturistic_building.glb?alt=media&token=e9267072-1be1-4a51-8300-9f699fb7e284",
-            modelLocalFile: models.shoe3,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal3.glb",
+            modelLocalFile: models.modal3,
             description: "State-of-the-art renewable energy facility combining solar, wind, and battery storage to power 50,000 homes sustainably."
         }
     ],
@@ -145,8 +145,8 @@ export const constructionCompanies = {
             price: "$340M",
             type: "Industrial Facility",
             url: "https://www.fluor.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2Fbuildings_for_3d_printing.glb?alt=media&token=d667bdf7-88cf-4621-821a-fa7e3a20fb78",
-            modelLocalFile: models.shoe1,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal4.glb",
+            modelLocalFile: models.modal4,
             description: "Advanced manufacturing facility with automated production lines, quality control systems, and environmental compliance infrastructure."
         },
         {
@@ -156,8 +156,8 @@ export const constructionCompanies = {
             price: "$280M",
             type: "Research & Development",
             url: "https://www.fluor.com/",
-            modelUrl: "https://firebasestorage.googleapis.com/v0/b/fix-it-dev.firebasestorage.app/o/modal%2Ffuturistic_building.glb?alt=media&token=e9267072-1be1-4a51-8300-9f699fb7e284",
-            modelLocalFile: models.shoe2,
+            modelUrl: "https://d2e54mdrms9tsc.cloudfront.net/Archive+4/modal3.glb",
+            modelLocalFile: models.modal3,
             description: "Cutting-edge pharmaceutical R&D center with cleanrooms, laboratories, and clinical trial facilities meeting FDA standards."
         }
     ]

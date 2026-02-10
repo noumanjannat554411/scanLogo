@@ -264,8 +264,8 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
           // Pick a random building from the company's projects
           const randomProject = companyProjects[Math.floor(Math.random() * companyProjects.length)];
           
+          stopScanning();
           setTimeout(() => {
-            stopScanning();
             // Open AR viewer directly with the building model
             setSelectedModel({
               url: randomProject.modelUrl,
@@ -367,6 +367,7 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
 
   return (
     <>
+      {!showARViewer && (
       <View style={styles.container}>
         {/* Camera */}
         <View style={styles.cameraContainer}>
@@ -522,6 +523,7 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
           )}
         </View>
       </View>
+      )}
 
       {/* AR Model Viewer */}
       {selectedModel && (

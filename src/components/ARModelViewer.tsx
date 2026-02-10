@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Modal,
     View,
@@ -7,13 +7,11 @@ import {
     Text,
     ActivityIndicator,
     Platform,
-    Dimensions,
+    Linking,
     Image,
+    Alert,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import RNFS from 'react-native-fs';
-
-const { width, height } = Dimensions.get('window');
 
 interface ARModelViewerProps {
     visible: boolean;
@@ -28,345 +26,89 @@ export default function ARModelViewer({
     productTitle,
     onClose,
 }: ARModelViewerProps) {
-    const [base64Model, setBase64Model] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [modelPath, setModelPath] = useState<string | null>(null);
 
     useEffect(() => {
         if (visible && modelUrl) {
-            loadModel();
+            prepareModel();
+            console.log('🔵 Model URL:', modelUrl);
         }
     }, [visible, modelUrl]);
 
-    const loadModel = async () => {
+    const prepareModel = async () => {
         try {
-            console.log('🔵 loadModel called with modelUrl:', modelUrl, 'Type:', typeof modelUrl);
             setIsLoading(true);
-            setError(null);
+            console.log('🔵 Preparing model, type:', typeof modelUrl);
 
-            // Handle different types of modelUrl
+            // Prepare the 3D viewer model (URL for WebView)
             if (typeof modelUrl === 'number') {
-                console.log('📦 Resolving asset from require() module ID:', modelUrl);
-                // It's a require() module ID, resolve it to get the actual path
+                // Resolve the asset from require()
                 const resolvedAsset = Image.resolveAssetSource(modelUrl);
                 console.log('✅ Resolved asset:', resolvedAsset);
+                
                 if (resolvedAsset && resolvedAsset.uri) {
-                    console.log('✅ Using URI:', resolvedAsset.uri);
-                    setBase64Model(resolvedAsset.uri);
+                    setModelPath(resolvedAsset.uri);
+                    console.log('✅ Model path set:', resolvedAsset.uri);
                 } else {
                     throw new Error('Could not resolve model asset');
                 }
             } else if (typeof modelUrl === 'string') {
-                console.log('📝 Processing string modelUrl:', modelUrl);
-                // Check if it's a URL or local file path
-                if (modelUrl.startsWith('http://') || modelUrl.startsWith('https://')) {
-                    console.log('🌐 Downloading remote model:', modelUrl);
-                    
-                    // Download the model and convert to base64 for WebView
-                    // This bypasses CORS issues in WebView
-                    const tempPath = `${RNFS.CachesDirectoryPath}/temp_model_${Date.now()}.glb`;
-                    console.log('📥 Downloading to:', tempPath);
-                    
-                    const downloadResult = await RNFS.downloadFile({
-                        fromUrl: modelUrl,
-                        toFile: tempPath,
-                        background: false,
-                        discretionary: false,
-                        cacheable: true,
-                        progress: (res) => {
-                            const progress = (res.bytesWritten / res.contentLength) * 100;
-                            console.log(`📊 Download progress: ${Math.round(progress)}%`);
-                        }
-                    }).promise;
-
-                    if (downloadResult.statusCode !== 200) {
-                        throw new Error(`Download failed with status: ${downloadResult.statusCode}`);
-                    }
-
-                    console.log('✅ Download complete, reading as base64...');
-                    const base64Data = await RNFS.readFile(tempPath, 'base64');
-                    console.log('✅ File read successfully, size:', base64Data.length, 'bytes');
-                    
-                    // Clean up temp file
-                    await RNFS.unlink(tempPath).catch(() => {});
-                    
-                    setBase64Model(`data:model/gltf-binary;base64,${base64Data}`);
-                } else {
-                    console.log('📁 Processing local file path');
-                    // It's a local file path, convert to base64
-                    const filePath = modelUrl.replace('file://', '');
-                    console.log('📂 Checking file exists at:', filePath);
-                    const exists = await RNFS.exists(filePath);
-                    
-                    if (!exists) {
-                        throw new Error('Model file not found at: ' + filePath);
-                    }
-
-                    console.log('📖 Reading file as base64...');
-                    const base64Data = await RNFS.readFile(filePath, 'base64');
-                    console.log('✅ File read successfully, length:', base64Data.length);
-                    setBase64Model(`data:model/gltf-binary;base64,${base64Data}`);
-                }
-            } else {
-                throw new Error('Invalid model URL type: ' + typeof modelUrl);
+                setModelPath(modelUrl);
+                console.log('✅ Model path set (string):', modelUrl);
             }
-            
-            console.log('✅ Model loaded successfully');
+
             setIsLoading(false);
-        } catch (err) {
-            console.error('❌ Error loading model:', err);
-            setError('Failed to load 3D model: ' + (err as Error).message);
+            console.log('✅ Preparation complete, isLoading:', false);
+        } catch (error) {
+            console.error('❌ Error preparing model:', error);
+            Alert.alert('Error', 'Failed to load 3D model');
             setIsLoading(false);
+            onClose();
         }
     };
 
-    // Properly escape the model URL for HTML
-    const modelUrlString = String(base64Model || modelUrl);
-    const escapedModelUrl = modelUrlString.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    const escapedTitle = productTitle.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-
-    const htmlContent = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AR Model Viewer</title>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            display: flex;
-            flex-direction: column;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            overflow: hidden;
+    const openInAR = async () => {
+        if (!modelPath) {
+            Alert.alert('AR Not Available', '3D model is not ready for AR viewing.');
+            return;
         }
 
-        .header {
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            z-index: 10;
-        }
+        try {
+            console.log('🚀 Opening AR with model path:', modelPath);
 
-        .title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #fff;
-            text-align: center;
-        }
-
-        model-viewer {
-            width: 100%;
-            height: 100%;
-            background-color: transparent;
-        }
-
-        .ar-button {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #FF6200 0%, #FFC082 100%);
-            color: #000;
-            font-size: 18px;
-            font-weight: 700;
-            padding: 16px 40px;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 8px 24px rgba(255, 98, 0, 0.4);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .ar-button:active {
-            transform: translateX(-50%) scale(0.95);
-        }
-
-        .controls {
-            position: absolute;
-            top: 80px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            z-index: 10;
-        }
-
-        .control-btn {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .control-btn:active {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(0.9);
-        }
-
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #fff;
-            font-size: 16px;
-            z-index: 5;
-        }
-
-        .instructions {
-            position: absolute;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 20px;
-            font-size: 14px;
-            text-align: center;
-            max-width: 80%;
-            z-index: 5;
-        }
-
-        .error-display {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #ff4444;
-            font-size: 14px;
-            background: rgba(255, 68, 68, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 80%;
-            text-align: center;
-            z-index: 10;
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div class="title">${escapedTitle}</div>
-    </div>
-
-    <div class="loading" id="loading">Loading 3D Model...</div>
-    <div class="error-display" id="errorDisplay"></div>
-
-    <model-viewer
-        id="modelViewer"
-        src="${escapedModelUrl}"
-        ar
-        ar-modes="webxr scene-viewer quick-look"
-        camera-controls
-        touch-action="pan-y"
-        auto-rotate
-        auto-rotate-delay="0"
-        rotation-per-second="20deg"
-        shadow-intensity="1"
-        environment-image="neutral"
-        exposure="1"
-        shadow-softness="0.5"
-        camera-orbit="0deg 75deg auto"
-        min-camera-orbit="auto auto auto"
-        max-camera-orbit="auto auto auto"
-        field-of-view="45deg"
-        max-field-of-view="90deg"
-        min-field-of-view="20deg"
-        alt="3D model of ${escapedTitle}"
-    >
-        <button class="ar-button" slot="ar-button">
-            <span>📱</span>
-            <span>View in AR</span>
-        </button>
-
-        <div class="instructions" slot="interaction-prompt">
-            👆 Drag to rotate • 🤏 Pinch to zoom
-        </div>
-    </model-viewer>
-
-    <div class="controls">
-        <button class="control-btn" onclick="resetCamera()">🔄</button>
-        <button class="control-btn" onclick="toggleRotation()">⏸️</button>
-    </div>
-
-    <script>
-        const modelViewer = document.getElementById('modelViewer');
-        const loading = document.getElementById('loading');
-        const errorDisplay = document.getElementById('errorDisplay');
-        let isRotating = true;
-
-        console.log('🔵 Model Viewer initialized with URL:', modelViewer.src);
-
-        modelViewer.addEventListener('load', () => {
-            loading.style.display = 'none';
-            errorDisplay.style.display = 'none';
-            console.log('✅ Model loaded successfully');
-        });
-
-        modelViewer.addEventListener('error', (event) => {
-            loading.style.display = 'none';
-            errorDisplay.style.display = 'block';
-            errorDisplay.textContent = 'Failed to load 3D model. Please check your connection and try again.';
-            console.error('❌ Model loading error:', event);
-            console.error('Model URL:', modelViewer.src);
-        });
-
-        modelViewer.addEventListener('progress', (event) => {
-            const progress = event.detail.totalProgress * 100;
-            loading.textContent = 'Loading 3D Model... ' + Math.round(progress) + '%';
-            console.log('📊 Loading progress:', progress + '%');
-        });
-
-        function resetCamera() {
-            modelViewer.cameraOrbit = '0deg 75deg auto';
-            modelViewer.fieldOfView = '45deg';
-            modelViewer.resetTurntableRotation();
-        }
-
-        function toggleRotation() {
-            isRotating = !isRotating;
-            if (isRotating) {
-                modelViewer.autoRotate = true;
-                document.querySelector('.controls button:nth-child(2)').textContent = '⏸️';
-            } else {
-                modelViewer.autoRotate = false;
-                document.querySelector('.controls button:nth-child(2)').textContent = '▶️';
+            if (Platform.OS === 'android') {
+                // For Android, open Scene Viewer via web URL
+                if (modelPath.startsWith('https://')) {
+                    const sceneViewerUrl = `https://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(modelPath)}&mode=ar_preferred&title=${encodeURIComponent(productTitle)}`;
+                    
+                    console.log('🤖 Opening Android Scene Viewer via web:', sceneViewerUrl);
+                    
+                    try {
+                        await Linking.openURL(sceneViewerUrl);
+                        console.log('✅ Android AR opened successfully');
+                    } catch (error) {
+                        console.error('❌ AR not available:', error);
+                        Alert.alert(
+                            'AR Not Supported',
+                            'Your device does not support Google ARCore. You can continue viewing the 3D model here.',
+                            [{ text: 'OK' }]
+                        );
+                    }
+                } else {
+                    Alert.alert(
+                        'AR Requires Online Model',
+                        'To use AR, the 3D model must be hosted online (HTTPS). You can continue viewing the 3D model here.',
+                        [{ text: 'OK' }]
+                    );
+                }
             }
+        } catch (error) {
+            console.error('❌ Error opening AR:', error);
         }
+    };
 
-        // Handle AR session
-        modelViewer.addEventListener('ar-status', (event) => {
-            if (event.detail.status === 'session-started') {
-                console.log('🎯 AR session started');
-            }
-        });
-    </script>
-</body>
-</html>
-    `;
+    console.log('🎬 ARModelViewer render - visible:', visible, 'isLoading:', isLoading, 'modelPath:', modelPath);
 
     return (
         <Modal
@@ -374,73 +116,120 @@ export default function ARModelViewer({
             animationType="slide"
             presentationStyle="fullScreen"
             onRequestClose={onClose}
+            transparent={false}
+            statusBarTranslucent={true}
         >
             <View style={styles.container}>
                 {/* Close Button */}
-                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                    <Text style={styles.closeButtonText}>✕</Text>
+                <TouchableOpacity 
+                    style={styles.webViewCloseButton} 
+                    onPress={onClose}
+                >
+                    <Text style={styles.closeText}>✕</Text>
                 </TouchableOpacity>
 
-                {isLoading && (
-                    <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="large" color="#FF6200" />
-                        <Text style={styles.loadingText}>Loading 3D Model...</Text>
-                    </View>
-                )}
+                {isLoading ? (
+                    <>
+                        {console.log('📦 Rendering loading state')}
+                        <View style={styles.centerContent}>
+                            <ActivityIndicator size="large" color="#FF6200" />
+                            <Text style={styles.loadingText}>Loading 3D Model...</Text>
+                        </View>
+                    </>
+                ) : modelPath ? (
+                    <>
+                        {console.log('📦 Rendering WebView with model:', modelPath)}
+                        {/* 3D Model Viewer */}
+                        <View style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
+                        <WebView
+                            source={{ 
+                                html: `
+                                <!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+                                    <style>
+                                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                                        body { 
+                                            width: 100vw; 
+                                            height: 100vh; 
+                                            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+                                            overflow: hidden;
+                                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                                        }
+                                        model-viewer {
+                                            width: 100%;
+                                            height: 100%;
+                                            background-color: transparent;
+                                        }
+                                        .title {
+                                            position: absolute;
+                                            top: 80px;
+                                            left: 50%;
+                                            transform: translateX(-50%);
+                                            color: white;
+                                            background: rgba(0,0,0,0.7);
+                                            padding: 12px 24px;
+                                            border-radius: 20px;
+                                            font-size: 18px;
+                                            font-weight: 600;
+                                            z-index: 10;
+                                        }
+                                        .info {
+                                            position: absolute;
+                                            bottom: 100px;
+                                            left: 50%;
+                                            transform: translateX(-50%);
+                                            color: white;
+                                            background: rgba(0,0,0,0.7);
+                                            padding: 12px 24px;
+                                            border-radius: 20px;
+                                            font-size: 14px;
+                                            z-index: 5;
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class="title">${productTitle}</div>
+                                    <model-viewer
+                                        src="${modelPath}"
+                                        camera-controls
+                                        touch-action="pan-y"
+                                        auto-rotate
+                                        rotation-per-second="30deg"
+                                        shadow-intensity="1"
+                                        environment-image="neutral"
+                                        exposure="1"
+                                        alt="${productTitle}"
+                                    >
+                                    </model-viewer>
+                                    <div class="info">👆 Drag to rotate • 🤏 Pinch to zoom</div>
+                                </body>
+                                </html>
+                                `
+                            }}
+                            style={{ flex: 1, backgroundColor: '#1a1a1a' }}
+                            javaScriptEnabled={true}
+                            domStorageEnabled={true}
+                            allowsInlineMediaPlayback={true}
+                            originWhitelist={['*']}
+                        />
+                        </View>
 
-                {error && (
-                    <View style={styles.errorContainer}>
-                        <Text style={styles.errorText}>❌</Text>
-                        <Text style={styles.errorMessage}>{error}</Text>
-                        <TouchableOpacity style={styles.retryButton} onPress={loadModel}>
-                            <Text style={styles.retryText}>Retry</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-
-                {!isLoading && !error && base64Model && (
-                    <WebView
-                        source={{ html: htmlContent }}
-                        style={styles.webview}
-                        javaScriptEnabled={true}
-                        domStorageEnabled={true}
-                        allowsInlineMediaPlayback={true}
-                        mediaPlaybackRequiresUserAction={false}
-                        allowFileAccess={true}
-                        allowUniversalAccessFromFileURLs={true}
-                        allowFileAccessFromFileURLs={true}
-                        originWhitelist={['*']}
-                        mixedContentMode="always"
-                        startInLoadingState={true}
-                        onMessage={(event) => {
-                            console.log('WebView message:', event.nativeEvent.data);
-                        }}
-                        onLoadStart={() => {
-                            console.log('🔵 WebView started loading');
-                        }}
-                        onLoadEnd={() => {
-                            console.log('✅ WebView finished loading');
-                        }}
-                        onHttpError={(syntheticEvent) => {
-                            const { nativeEvent } = syntheticEvent;
-                            console.error('❌ HTTP Error:', nativeEvent.statusCode, nativeEvent.description);
-                        }}
-                        renderLoading={() => (
-                            <View style={styles.loadingContainer}>
-                                <ActivityIndicator size="large" color="#FF6200" />
-                                <Text style={styles.loadingText}>Loading AR Viewer...</Text>
+                        {/* View in AR Button */}
+                        <TouchableOpacity
+                            style={styles.arFloatingButton}
+                            onPress={openInAR}
+                            activeOpacity={0.8}
+                        >
+                            <View style={styles.arButtonGradient}>
+                                <Text style={styles.arFloatingIcon}>📱</Text>
+                                <Text style={styles.arFloatingText}>View in AR</Text>
                             </View>
-                        )}
-                        onError={(syntheticEvent: any) => {
-                            const { nativeEvent } = syntheticEvent;
-                            console.error('❌ WebView error:', nativeEvent);
-                            setError('Failed to load AR viewer: ' + (nativeEvent.description || 'Unknown error'));
-                        }}
-                        onConsoleMessage={(event: any) => {
-                            console.log('WebView Console:', event.nativeEvent.message);
-                        }}
-                    />
-                )}
+                        </TouchableOpacity>
+                    </>
+                ) : null}
             </View>
         </Modal>
     );
@@ -451,7 +240,12 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#1a1a1a',
     },
-    closeButton: {
+    centerContent: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    webViewCloseButton: {
         position: 'absolute',
         top: Platform.OS === 'ios' ? 50 : 20,
         left: 20,
@@ -463,60 +257,45 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         zIndex: 1000,
     },
-    closeButtonText: {
+    closeText: {
         color: '#fff',
         fontSize: 24,
         fontWeight: '300',
     },
-    webview: {
-        flex: 1,
-        backgroundColor: 'transparent',
-    },
-    loadingContainer: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#1a1a1a',
-    },
     loadingText: {
-        marginTop: 16,
         color: '#fff',
         fontSize: 16,
+        marginTop: 16,
     },
-    errorContainer: {
+    arFloatingButton: {
         position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
+        bottom: 30,
+        left: 20,
+        right: 20,
+        height: 60,
+        borderRadius: 30,
+        overflow: 'hidden',
+        shadowColor: '#FF6200',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+        zIndex: 100,
+        backgroundColor: '#FF6200',
+    },
+    arButtonGradient: {
+        flex: 1,
+        flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#1a1a1a',
-        padding: 20,
     },
-    errorText: {
-        fontSize: 48,
-        marginBottom: 16,
+    arFloatingIcon: {
+        fontSize: 24,
+        marginRight: 12,
     },
-    errorMessage: {
-        color: '#fff',
-        fontSize: 16,
-        textAlign: 'center',
-        marginBottom: 24,
-    },
-    retryButton: {
-        backgroundColor: '#FF6200',
-        paddingHorizontal: 32,
-        paddingVertical: 12,
-        borderRadius: 25,
-    },
-    retryText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
+    arFloatingText: {
+        color: '#000',
+        fontSize: 18,
+        fontWeight: '700',
     },
 });
