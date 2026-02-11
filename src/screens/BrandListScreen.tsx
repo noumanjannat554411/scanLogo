@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import {
     View,
     Text,
@@ -7,229 +7,70 @@ import {
     ScrollView,
     StatusBar,
     Alert,
-    Animated,
+    Image,
+    ImageBackground,
+    Dimensions,
+    TextInput,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import LinearGradient from 'react-native-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scale } from '../utils/functions';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types/navigation';
+import { images } from '../assets/images/images';
+import LinearGradient from 'react-native-linear-gradient';
+
+const { width } = Dimensions.get('window');
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BrandList'>;
 
 interface Brand {
     id: number;
     name: string;
-    icon: string;
     isActive: boolean;
-    description: string;
+    brandImage: any;
 }
 
-const BRANDS: Brand[] = [
+const BRANDS: any = [
     {
         id: 1,
         name: 'Nike',
-        icon: '👟',
         isActive: true,
+        brandImage: images.nikeLogo,
         description: 'Sportswear & Athletic Shoes',
     },
     {
         id: 2,
         name: 'Ralph Lauren',
-        icon: '🏇',
         isActive: true,
-        description: 'Luxury Fashion & Lifestyle',
+        brandImage: images.ralphlauren,
+        description: 'Luxury Apparel & Accessories',
     },
     {
         id: 3,
-        name: 'Adidas',
-        icon: '⚽',
+        name: 'Gucci',
         isActive: false,
-        description: 'Coming in Next Phase',
+        brandImage: images.gucci,
+        description: 'Designer Fashion & Leather Goods',
     },
     {
         id: 4,
-        name: 'Gucci',
-        icon: '👜',
+        name: 'Adidas',
         isActive: false,
-        description: 'Coming in Next Phase',
+        brandImage: images.addidas,
+        description: 'Sportswear & Performance Gear',
     },
     {
         id: 5,
         name: 'Puma',
-        icon: '🐆',
         isActive: false,
-        description: 'Coming in Next Phase',
+        brandImage: images.puma,
+        description: 'Athletic Wear & Lifestyle Products',
     },
 ];
 
-const BrandCard = ({ 
-    brand, 
-    onPress 
-}: { 
-    brand: Brand; 
-    onPress: () => void;
-}) => {
-    const scaleAnim = useRef(new Animated.Value(1)).current;
-    const rotateAnim = useRef(new Animated.Value(0)).current;
-    const glowAnim = useRef(new Animated.Value(0)).current;
-
-    React.useEffect(() => {
-        if (brand.isActive) {
-            Animated.loop(
-                Animated.sequence([
-                    Animated.timing(glowAnim, {
-                        toValue: 1,
-                        duration: 2000,
-                        useNativeDriver: true,
-                    }),
-                    Animated.timing(glowAnim, {
-                        toValue: 0,
-                        duration: 2000,
-                        useNativeDriver: true,
-                    }),
-                ])
-            ).start();
-        }
-    }, [brand.isActive]);
-
-    const handlePressIn = () => {
-        Animated.parallel([
-            Animated.spring(scaleAnim, {
-                toValue: 0.95,
-                useNativeDriver: true,
-            }),
-            Animated.timing(rotateAnim, {
-                toValue: 1,
-                duration: 200,
-                useNativeDriver: true,
-            }),
-        ]).start();
-    };
-
-    const handlePressOut = () => {
-        Animated.parallel([
-            Animated.spring(scaleAnim, {
-                toValue: 1,
-                friction: 3,
-                tension: 40,
-                useNativeDriver: true,
-            }),
-            Animated.timing(rotateAnim, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: true,
-            }),
-        ]).start();
-    };
-
-    const rotateY = rotateAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['0deg', '3deg'],
-    });
-
-    const glowOpacity = glowAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0.3, 0.8],
-    });
-
-    return (
-        <TouchableOpacity
-            activeOpacity={1}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
-            onPress={() => {
-                handlePressOut();
-                setTimeout(onPress, 100);
-            }}
-        >
-            <Animated.View
-                style={[
-                    styles.brandCard,
-                    !brand.isActive && styles.brandCardInactive,
-                    {
-                        transform: [
-                            { scale: scaleAnim },
-                            { perspective: 1000 },
-                            { rotateY },
-                        ],
-                    },
-                ]}
-            >
-                {brand.isActive && (
-                    <Animated.View
-                        style={[
-                            styles.glowEffect,
-                            { opacity: glowOpacity },
-                        ]}
-                    />
-                )}
-                
-                <LinearGradient
-                    colors={
-                        brand.isActive
-                            ? ['rgba(102, 126, 234, 0.2)', 'rgba(118, 75, 162, 0.2)']
-                            : ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.05)']
-                    }
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.cardGradient}
-                >
-                    <View style={styles.cardContent}>
-                        <LinearGradient
-                            colors={
-                                brand.isActive
-                                    ? ['rgba(102, 126, 234, 0.5)', 'rgba(118, 75, 162, 0.5)']
-                                    : ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.1)']
-                            }
-                            style={[
-                                styles.brandIcon,
-                                !brand.isActive && styles.brandIconInactive,
-                            ]}
-                        >
-                            <Text style={styles.iconText}>{brand.icon}</Text>
-                        </LinearGradient>
-                        
-                        <View style={styles.brandInfo}>
-                            <Text style={[
-                                styles.brandName,
-                                !brand.isActive && styles.inactiveText,
-                            ]}>
-                                {brand.name}
-                            </Text>
-                            <Text style={[
-                                styles.brandDescription,
-                                !brand.isActive && styles.inactiveText,
-                            ]}>
-                                {brand.description}
-                            </Text>
-                        </View>
-                        
-                        {brand.isActive && (
-                            <LinearGradient
-                                colors={['#4ade80', '#22c55e']}
-                                style={styles.activeBadge}
-                            >
-                                <Text style={styles.activeBadgeText}>✓ Active</Text>
-                            </LinearGradient>
-                        )}
-                    </View>
-                </LinearGradient>
-
-                {/* 3D Shadow Layers */}
-                {brand.isActive && (
-                    <>
-                        <View style={[styles.shadowLayer, styles.shadowLayer1]} />
-                        <View style={[styles.shadowLayer, styles.shadowLayer2]} />
-                    </>
-                )}
-            </Animated.View>
-        </TouchableOpacity>
-    );
-};
-
 export default function BrandListScreen({ navigation, route }: Props) {
     const { mallName } = route.params;
+    const insets = useSafeAreaInsets();
 
     const handleBrandPress = (brand: Brand) => {
         if (brand.isActive) {
@@ -249,69 +90,87 @@ export default function BrandListScreen({ navigation, route }: Props) {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#0a0a0a" />
-            
-            {/* Animated Background Gradient */}
-            <LinearGradient
-                colors={['#0a0a0a', '#1a1a2e', '#16213e']}
-                style={StyleSheet.absoluteFill}
-            />
-            
-            {/* Header */}
-            <LinearGradient
-                colors={['rgba(102, 126, 234, 0.8)', 'rgba(118, 75, 162, 0.8)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.header}
-            >
-                <SafeAreaView edges={['top']}>
-                    <TouchableOpacity
-                        onPress={() => navigation.goBack()}
-                        style={styles.backButton}
-                    >
-                        <Text style={styles.backText}>← Back</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>{mallName}</Text>
-                    <Text style={styles.headerSubtitle}>Available Brands</Text>
-                </SafeAreaView>
-            </LinearGradient>
+            <StatusBar barStyle="light-content" backgroundColor="#111" />
 
-            {/* Brand List */}
-            <ScrollView 
+            {/* Header */}
+            <View style={[styles.header, { paddingTop: insets.top + scale(4) }]}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Image
+                        source={images.menu}
+                        style={styles.headerIcon}
+                    />
+                </TouchableOpacity>
+                <Image source={images.logo} style={styles.logo} resizeMode="contain" />
+                <TouchableOpacity>
+                    <Image
+                        source={images.notification}
+                        style={styles.headerIcon}
+                    />
+                </TouchableOpacity>
+            </View>
+            {/* Brand Cards */}
+            <ScrollView
                 style={styles.scrollView}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
             >
-                {BRANDS.map((brand) => (
-                    <BrandCard
-                        key={brand.id}
-                        brand={brand}
+                {BRANDS.map((brand, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        style={[
+                            styles.brandCard,
+                            !brand.isActive && styles.brandCardInactive,
+                        ]}
                         onPress={() => handleBrandPress(brand)}
-                    />
+                        activeOpacity={brand.isActive ? 0.85 : 0.6}
+                    >
+
+                        <View style={styles.container1}>
+                            {/* Yellow inner glow */}
+                            <LinearGradient
+                                colors={['transparent', '#F8A231']}
+                                start={{ x: 0.5, y: 0 }}
+                                end={{ x: 0.5, y: 1 }}
+                                style={styles.yellowGlow}
+                            />
+
+                            {/* White soft highlight */}
+                            <LinearGradient
+                                colors={['transparent', 'rgba(255,255,255,0.26)']}
+                                start={{ x: 0.5, y: 0 }}
+                                end={{ x: 0.5, y: 1 }}
+                                style={styles.whiteGlow}
+                            />
+                        </View>
+                        <View style={{ position: "absolute", bottom: 0, left: 0, right: 0, top: 0, height: 10, backgroundColor: 'rgba(255,255,255,0.0)' }}>
+                            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: scale(40), paddingTop: scale(50), alignItems: 'center' }}>
+                                <View>
+                                    <Text style={styles.mallName}>{brand.name}</Text>
+                                    <Text style={styles.mallLocation}>{brand.description}</Text>
+                                </View>
+                                <Image source={brand.brandImage} style={styles.arrowCircle} />
+
+                            </View>
+                            {/* <Image source={brand.image} style={styles.mallImage} /> */}
+                        </View>
+                    </TouchableOpacity>
                 ))}
 
                 {/* Scan Button */}
-                <TouchableOpacity
-                    style={styles.scanButton}
+                {/* <TouchableOpacity
+                    style={styles.scanBtn}
                     onPress={handleScanPress}
                     activeOpacity={0.8}
                 >
-                    <LinearGradient
-                        colors={['#667eea', '#764ba2']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.scanButtonGradient}
+                    <ImageBackground
+                        source={images.backgroundImage}
+                        resizeMode="stretch"
+                        style={styles.scanBtnInner}
                     >
-                        <View style={styles.scanButtonContent}>
-                            <Text style={styles.scanIcon}>📷</Text>
-                            <Text style={styles.scanButtonText}>Start Scanning</Text>
-                        </View>
-                    </LinearGradient>
-                    
-                    {/* 3D Shadow for scan button */}
-                    <View style={styles.scanButtonShadow1} />
-                    <View style={styles.scanButtonShadow2} />
-                </TouchableOpacity>
+                        <Text style={styles.scanEmoji}>📷</Text>
+                        <Text style={styles.scanText}>Start Scanning</Text>
+                    </ImageBackground>
+                </TouchableOpacity> */}
             </ScrollView>
         </View>
     );
@@ -320,212 +179,203 @@ export default function BrandListScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0a0a0a',
+        backgroundColor: '#111',
     },
     header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         paddingHorizontal: scale(20),
-        paddingBottom: scale(25),
-        borderBottomLeftRadius: scale(30),
-        borderBottomRightRadius: scale(30),
-        elevation: 10,
-        shadowColor: '#667eea',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
+        paddingBottom: scale(10),
     },
-    backButton: {
-        marginBottom: scale(12),
-        paddingVertical: scale(8),
+    headerIcon: {
+        width: scale(22),
+        height: scale(22),
+        tintColor: '#fff',
+        resizeMode: 'contain',
     },
-    backText: {
-        fontSize: scale(17),
-        color: '#fff',
-        fontWeight: '700',
-        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2,
+    logo: {
+        width: scale(120),
+        height: scale(30),
     },
-    headerTitle: {
-        fontSize: scale(32),
+    titleSection: {
+        paddingHorizontal: scale(20),
+        paddingTop: scale(4),
+        paddingBottom: scale(4),
+    },
+    title: {
+        fontSize: scale(22),
         fontWeight: 'bold',
         color: '#fff',
-        marginBottom: scale(8),
-        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-        textShadowOffset: { width: 0, height: 2 },
-        textShadowRadius: 4,
     },
-    headerSubtitle: {
+    subtitle: {
+        fontSize: scale(13),
+        color: 'rgba(255,255,255,0.55)',
+        marginTop: scale(2),
+    },
+    searchWrap: {
+        paddingHorizontal: scale(20),
+        paddingTop: scale(10),
+        paddingBottom: scale(10),
+    },
+    searchBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        borderRadius: scale(14),
+        paddingHorizontal: scale(14),
+        paddingVertical: scale(11),
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.12)',
+    },
+    searchLens: {
         fontSize: scale(16),
-        color: 'rgba(255, 255, 255, 0.95)',
-        fontWeight: '500',
+        marginRight: scale(8),
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: scale(14),
+        color: '#fff',
+        padding: 0,
     },
     scrollView: {
         flex: 1,
+        paddingTop: scale(20),
     },
     scrollContent: {
-        padding: scale(20),
-        paddingTop: scale(30),
+        paddingHorizontal: scale(20),
+        paddingTop: scale(2),
+        paddingBottom: scale(30),
     },
     brandCard: {
-        marginBottom: scale(20),
-        borderRadius: scale(20),
-        overflow: 'visible',
+        marginBottom: scale(12),
+        borderRadius: scale(16),
+        overflow: 'hidden',
     },
     brandCardInactive: {
-        opacity: 0.7,
+        opacity: 0.45,
     },
-    glowEffect: {
-        position: 'absolute',
-        top: -scale(2),
-        left: -scale(2),
-        right: -scale(2),
-        bottom: -scale(2),
-        borderRadius: scale(22),
-        backgroundColor: 'rgba(102, 126, 234, 0.4)',
-        zIndex: -1,
-    },
-    cardGradient: {
-        borderRadius: scale(20),
-        borderWidth: 1.5,
-        borderColor: 'rgba(102, 126, 234, 0.4)',
-        overflow: 'hidden',
-        backgroundColor: 'rgba(26, 26, 46, 0.6)',
-    },
-    cardContent: {
+    cardBg: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: scale(22),
+        paddingLeft: scale(16),
+        paddingRight: scale(12),
+        paddingVertical: scale(12),
+        minHeight: scale(95),
     },
-    brandIcon: {
-        width: scale(70),
-        height: scale(70),
-        borderRadius: scale(35),
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: scale(18),
-        elevation: 5,
-        shadowColor: '#667eea',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.4,
-        shadowRadius: 6,
-    },
-    brandIconInactive: {
-        elevation: 2,
-    },
-    iconText: {
-        fontSize: scale(36),
-        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-        textShadowOffset: { width: 0, height: 2 },
-        textShadowRadius: 4,
-    },
-    brandInfo: {
+    brandInfoCol: {
         flex: 1,
     },
     brandName: {
-        fontSize: scale(22),
-        fontWeight: '800',
+        fontSize: scale(18),
+        fontWeight: '700',
         color: '#fff',
-        marginBottom: scale(6),
-        textShadowColor: 'rgba(0, 0, 0, 0.2)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2,
     },
-    brandDescription: {
-        fontSize: scale(15),
-        color: 'rgba(255, 255, 255, 0.8)',
+    statusRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: scale(5),
+        gap: scale(5),
+    },
+    dot: {
+        width: scale(7),
+        height: scale(7),
+        borderRadius: scale(4),
+    },
+    statusLabel: {
+        fontSize: scale(12),
+        color: 'rgba(255,255,255,0.6)',
         fontWeight: '500',
     },
-    inactiveText: {
-        color: 'rgba(255, 255, 255, 0.5)',
+    dimText: {
+        color: 'rgba(255,255,255,0.4)',
     },
-    activeBadge: {
-        paddingHorizontal: scale(14),
-        paddingVertical: scale(8),
+    brandImg: {
+        width: scale(100),
+        height: scale(70),
+        transform: [{ rotate: '-20deg' }],
+        marginRight: scale(4),
+    },
+    checkCircle: {
+        width: scale(28),
+        height: scale(28),
         borderRadius: scale(14),
-        elevation: 3,
-        shadowColor: '#4ade80',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 4,
+        backgroundColor: '#e8932f',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    activeBadgeText: {
-        fontSize: scale(13),
-        fontWeight: '800',
+    checkMark: {
+        fontSize: scale(14),
         color: '#fff',
-        textShadowColor: 'rgba(0, 0, 0, 0.2)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2,
+        fontWeight: '700',
     },
-    shadowLayer: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        height: '100%',
-        borderRadius: scale(20),
-        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-    },
-    shadowLayer1: {
-        top: scale(3),
-        zIndex: -1,
-        opacity: 0.6,
-    },
-    shadowLayer2: {
-        top: scale(6),
-        zIndex: -2,
-        opacity: 0.3,
-    },
-    scanButton: {
-        marginTop: scale(20),
+    scanBtn: {
+        marginTop: scale(10),
         marginBottom: scale(20),
-        borderRadius: scale(20),
-        overflow: 'visible',
-        elevation: 10,
-        shadowColor: '#667eea',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.5,
-        shadowRadius: 15,
-    },
-    scanButtonGradient: {
-        borderRadius: scale(20),
+        borderRadius: scale(16),
         overflow: 'hidden',
     },
-    scanButtonContent: {
+    scanBtnInner: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: scale(22),
-        paddingHorizontal: scale(24),
+        paddingVertical: scale(18),
     },
-    scanIcon: {
-        fontSize: scale(32),
-        marginRight: scale(12),
-    },
-    scanButtonText: {
+    scanEmoji: {
         fontSize: scale(22),
+        marginRight: scale(10),
+    },
+    scanText: {
+        fontSize: scale(18),
         fontWeight: 'bold',
         color: '#fff',
-        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-        textShadowOffset: { width: 0, height: 2 },
-        textShadowRadius: 4,
     },
-    scanButtonShadow1: {
-        position: 'absolute',
-        top: scale(4),
-        left: 0,
-        right: 0,
-        height: '100%',
-        borderRadius: scale(20),
-        backgroundColor: 'rgba(102, 126, 234, 0.3)',
-        zIndex: -1,
+    container1: {
+        width: scale(390),
+        height: scale(160),
+        backgroundColor: '#212020ff',
+        borderRadius: 59,
+        overflow: 'hidden',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    scanButtonShadow2: {
+    yellowGlow: {
         position: 'absolute',
-        top: scale(8),
-        left: 0,
-        right: 0,
-        height: '100%',
-        borderRadius: scale(20),
-        backgroundColor: 'rgba(102, 126, 234, 0.15)',
-        zIndex: -2,
+        bottom: 0,
+        width: '100%',
+        height: 20,
+        borderBottomLeftRadius: 59,
+        borderBottomRightRadius: 59,
+    },
+    whiteGlow: {
+        position: 'absolute',
+        bottom: 0,
+        width: '100%',
+        height: 25,
+        borderBottomLeftRadius: 59,
+        borderBottomRightRadius: 59,
+    },
+    mallName: {
+        fontSize: scale(20),
+        fontWeight: '600',
+        color: '#fff',
+    },
+    mallLocation: {
+        fontSize: scale(12),
+        color: '#fff',
+        marginTop: scale(3),
+    },
+    arrowCircle: {
+        width: scale(96),
+        height: scale(80),
+        borderRadius: scale(16),
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    mallImage: {
+        width: scale(50),
+        height: scale(50),
+        alignSelf: 'center',
+        marginTop: scale(30),
     },
 });

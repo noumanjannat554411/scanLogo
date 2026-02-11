@@ -168,7 +168,9 @@ export default function SplashScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: "110%",
+    width: Dimensions.get('window').width +80,
+    left:scale(-40),
     justifyContent: 'center',
     alignItems: 'center',
   },
