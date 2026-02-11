@@ -28,7 +28,7 @@ function App() {
         <NavigationContainer>
           <StatusBar barStyle="light-content" />
           <Stack.Navigator
-            initialRouteName="ProductDetails"
+            initialRouteName="Splash"
             screenOptions={{
               headerShown: false,
               animation: 'fade',
