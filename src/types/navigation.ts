@@ -22,4 +22,11 @@ export type RootStackParamList = {
     product: Product;
     brand: string;
   };
+  BuildingsList: undefined;
+  BuildingDetail: {
+    buildingId: number;
+  };
+  RoomTypes: {
+    buildingId: number;
+  };
 };

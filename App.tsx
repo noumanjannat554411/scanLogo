@@ -10,7 +10,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SplashScreen from './src/screens/SplashScreen';
-import LogoScannerEnhanced from './src/components/LogoScannerEnhanced';
+import BuildingsListScreen from './src/screens/BuildingsListScreen';
+import BuildingDetailScreen from './src/screens/BuildingDetailScreen';
+import RoomTypesScreen from './src/screens/RoomTypesScreen';
 import type { RootStackParamList } from './src/types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -35,8 +37,22 @@ function App() {
               }}
             />
             <Stack.Screen
-              name="Scanner"
-              component={LogoScannerEnhanced}
+              name="BuildingsList"
+              component={BuildingsListScreen}
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
+            <Stack.Screen
+              name="BuildingDetail"
+              component={BuildingDetailScreen}
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
+            <Stack.Screen
+              name="RoomTypes"
+              component={RoomTypesScreen}
               options={{
                 animation: 'slide_from_right',
               }}

@@ -68,9 +68,9 @@ export default function SplashScreen({ navigation }: Props) {
       ])
     ).start();
 
-    // Navigate to Scanner after 2.5 seconds
+    // Navigate to BuildingsList after 2.5 seconds
     const timer = setTimeout(() => {
-      navigation.replace('Scanner');
+      navigation.replace('BuildingsList');
     }, 3000);
 
     return () => clearTimeout(timer);
