@@ -194,7 +194,7 @@ export default function LogoScanner({ navigation }: LogoScannerProps) {
 
       console.log('📷 Photo taken:', photo.path);
       setScanProgress(0.5);
-      setScanStatus('📡 Processing with AI...');
+      setScanStatus('📡 Processing...');
 
       const base64Image = await photoToBase64(photo.path);
       console.log('📝 Image converted to base64, length:', base64Image.length);
