@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -9,6 +9,7 @@ import {
     Dimensions,
     StatusBar,
     ImageBackground,
+    Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -17,6 +18,7 @@ import type { RootStackParamList } from '../types/navigation';
 import { buildings } from '../assets/data/arrays/buildings-data';
 import { images } from '../assets/images/images';
 import { scale } from '../utils/functions';
+import ARModelViewer from '../components/ARModelViewer';
 
 const { width } = Dimensions.get('window');
 
@@ -26,7 +28,15 @@ export default function RoomTypesScreen({ route, navigation }: Props) {
     const { buildingId } = route.params;
     const building = buildings.find((b) => b.id === buildingId)!;
     const insets = useSafeAreaInsets();
+    const [showARViewer, setShowARViewer] = useState(false);
 
+    const handleViewIn3D = () => {
+        if (building.modelUrl) {
+            setShowARViewer(true);
+        } else {
+            Alert.alert('3D Model Not Available', 'The 3D model for this building is not available yet.');
+        }
+    };
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
@@ -63,7 +73,18 @@ export default function RoomTypesScreen({ route, navigation }: Props) {
             >
                 {/* Building Title */}
                 <View style={styles.titleSection}>
-                    <Text style={styles.buildingName}>{building.name}</Text>
+                    <View style={styles.titleRow}>
+                        <Text style={styles.buildingName}>{building.name}</Text>
+                        {buildingId === 1 && <View style={styles.goldenVisaBadge}>
+                            <LinearGradient
+                                colors={['#D4A847', '#B8891E']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={styles.goldenVisaBadgeBg}
+                            />
+                            <Text style={styles.goldenVisaBadgeText}>Eligible for{'\n'}Golden Visa</Text>
+                        </View>}
+                    </View>
                     <Text style={styles.subtitle}>Choose your apartment type</Text>
                 </View>
 
@@ -75,8 +96,7 @@ export default function RoomTypesScreen({ route, navigation }: Props) {
                             style={styles.roomCard}
                             activeOpacity={0.9}
                             onPress={() => {
-                                // Navigate to building detail
-                                navigation.navigate('BuildingDetail', { buildingId: building.id });
+                                navigation.navigate('BuildingDetail', { buildingId: building.id, roomTypeId: room.id });
                             }}
                         >
                             {/* Room Image */}
@@ -102,7 +122,7 @@ export default function RoomTypesScreen({ route, navigation }: Props) {
                                     <Text style={styles.roomName}>{room.name}</Text>
                                 </View>
                                 <View style={styles.roomDetails}>
-                                    <Text style={styles.roomPrice}>From {room.priceFrom}/mo</Text>
+                                    <Text style={styles.roomPrice}>From {room.priceFrom}</Text>
                                     <Text style={styles.roomSqft}>{room.sqft}</Text>
                                 </View>
                             </View>
@@ -125,7 +145,57 @@ export default function RoomTypesScreen({ route, navigation }: Props) {
                         <Text style={styles.infoText}>{building.totalUnits} total units available</Text>
                     </View>
                 </View>
+
+
+                {/* Action Buttons */}
+                <View style={styles.actionsContainer}>
+                    {/* View in 3D Button */}
+                    <TouchableOpacity style={styles.view3DButton} onPress={handleViewIn3D}>
+                        <LinearGradient
+                            colors={['#FF6200', '#FFC082', '#FF6200']}
+                            style={StyleSheet.absoluteFill}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                        />
+                        <View style={styles.view3DContent}>
+                            <Image source={images.box} style={styles.cubeIcon} />
+                            <Text style={styles.view3DText}>View in 3D</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+                {/* Golden Visa Button */}
+                {buildingId === 1 && <View style={styles.goldenVisaSection}>
+                    <TouchableOpacity
+                        activeOpacity={0.85}
+                        onPress={() => navigation.navigate('GoldenVisa', { buildingId: building.id })}
+                    >
+                        <LinearGradient
+                            colors={['#D4A847', '#C4982F', '#B8891E']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.goldenVisaButton}
+                        >
+                            <View style={styles.goldenVisaContent}>
+                                <Text style={styles.goldenVisaEmoji}>🇦🇪</Text>
+                                <View style={styles.goldenVisaTextWrap}>
+                                    <Text style={styles.goldenVisaTitle}>Apply for Golden Visa</Text>
+                                    <Text style={styles.goldenVisaSubtitle}>Invest AED 2M+ in property → 5-year residency</Text>
+                                </View>
+                                <Text style={styles.goldenVisaArrow}>›</Text>
+                            </View>
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </View>}
             </ScrollView>
+            {/* AR Viewer Modal */}
+            {building.modelUrl && (
+                <ARModelViewer
+                    visible={showARViewer}
+                    modelUrl={building.modelUrl}
+                    productTitle={building.name}
+                    onClose={() => setShowARViewer(false)}
+                />
+            )}
         </View>
     );
 }
@@ -162,11 +232,42 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         marginBottom: 24,
     },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+    },
     buildingName: {
         fontSize: scale(32),
         fontWeight: '800',
         color: '#fff',
         marginBottom: 4,
+        flex: 1,
+    },
+    goldenVisaBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginLeft: 12,
+        marginTop: 4,
+    },
+    goldenVisaBadgeBg: {
+        ...StyleSheet.absoluteFillObject,
+        borderRadius: 12,
+    },
+    goldenVisaBadgeIcon: {
+        fontSize: 12,
+        color: '#1a1510',
+        marginRight: 5,
+    },
+    goldenVisaBadgeText: {
+        fontSize: scale(8),
+        fontWeight: '800',
+        color: '#1a1510',
+        lineHeight: 13,
     },
     subtitle: {
         fontSize: scale(14),
@@ -254,5 +355,82 @@ const styles = StyleSheet.create({
     infoText: {
         fontSize: scale(13),
         color: 'rgba(255,255,255,0.6)',
+    },
+    // Actions
+    actionsContainer: {
+        flexDirection: 'row',
+        paddingHorizontal: 24,
+        gap: 12,
+        marginBottom: 20,
+        marginTop: 20,
+    },
+    view3DButton: {
+        flex: 1,
+        height: scale(52),
+        borderRadius: 16,
+        overflow: 'hidden',
+        elevation: 4,
+        shadowColor: '#FF6200',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
+    view3DContent: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+    },
+    cubeIcon: {
+        height: scale(22),
+        width: scale(22),
+    },
+    view3DText: {
+        fontSize: scale(16),
+        fontWeight: '700',
+        color: '#000',
+    },
+
+    // Golden Visa Button
+    goldenVisaSection: {
+        paddingHorizontal: 24,
+        paddingTop: 28,
+    },
+    goldenVisaButton: {
+        borderRadius: 18,
+        padding: 18,
+        shadowColor: '#D4A847',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 8,
+    },
+    goldenVisaContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    goldenVisaEmoji: {
+        fontSize: 28,
+        marginRight: 14,
+    },
+    goldenVisaTextWrap: {
+        flex: 1,
+    },
+    goldenVisaTitle: {
+        fontSize: scale(16),
+        fontWeight: '800',
+        color: '#1a1510',
+        marginBottom: 2,
+    },
+    goldenVisaSubtitle: {
+        fontSize: scale(11),
+        color: 'rgba(26,21,16,0.6)',
+        fontWeight: '500',
+    },
+    goldenVisaArrow: {
+        fontSize: 32,
+        color: 'rgba(26,21,16,0.4)',
+        fontWeight: '300',
     },
 });

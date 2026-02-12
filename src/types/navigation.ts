@@ -25,8 +25,12 @@ export type RootStackParamList = {
   BuildingsList: undefined;
   BuildingDetail: {
     buildingId: number;
+    roomTypeId?: number;
   };
   RoomTypes: {
+    buildingId: number;
+  };
+  GoldenVisa: {
     buildingId: number;
   };
 };

@@ -25,8 +25,9 @@ const { width, height } = Dimensions.get('window');
 type Props = NativeStackScreenProps<RootStackParamList, 'BuildingDetail'>;
 
 export default function BuildingDetailScreen({ route, navigation }: Props) {
-    const { buildingId } = route.params;
+    const { buildingId, roomTypeId } = route.params;
     const building = buildings.find((b) => b.id === buildingId)!;
+    const roomType = roomTypeId ? building.roomTypes.find((r) => r.id === roomTypeId) : null;
     const [activeTab, setActiveTab] = useState<'Details' | 'Reviews' | 'Map'>('Details');
     const [showARViewer, setShowARViewer] = useState(false);
     const insets = useSafeAreaInsets();
@@ -37,10 +38,6 @@ export default function BuildingDetailScreen({ route, navigation }: Props) {
         } else {
             Alert.alert('3D Model Not Available', 'The 3D model for this building is not available yet.');
         }
-    };
-
-    const handleViewRoomTypes = () => {
-        navigation.navigate('RoomTypes', { buildingId: building.id });
     };
 
     const renderStars = (rating: number) => {
@@ -92,7 +89,7 @@ export default function BuildingDetailScreen({ route, navigation }: Props) {
                 <View style={styles.modelContainer}>
                     <View style={styles.modelImageWrapper}>
                         <Image
-                            source={{ uri: building.modelImage }}
+                            source={{ uri: roomType ? roomType.image : building.modelImage }}
                             style={styles.modelImage}
                             resizeMode="cover"
                         />
@@ -104,7 +101,9 @@ export default function BuildingDetailScreen({ route, navigation }: Props) {
 
                 {/* Building Name & Location */}
                 <View style={styles.infoSection}>
-                    <Text style={styles.buildingName}>{building.name}</Text>
+                    <Text style={styles.buildingName}>
+                        {roomType ? `${roomType.name} — ${building.name}` : building.name}
+                    </Text>
                     <Text style={styles.locationText}>{building.location}</Text>
 
                     {/* Rating */}
@@ -121,7 +120,22 @@ export default function BuildingDetailScreen({ route, navigation }: Props) {
                     </View>
 
                     {/* Price */}
-                    <Text style={styles.price}>{building.price}</Text>
+                    <Text style={styles.price}>
+                      <Text style={{fontWeight: '500', fontSize: scale(16) }}>From </Text>{roomType ? `${roomType.priceFrom}` : building.price}
+                    </Text>
+
+                    {/* Room Type Details */}
+                    {roomType && (
+                        <View style={styles.roomTypeInfoRow}>
+                            <View style={styles.roomTypeChip}>
+                                <Text style={styles.roomTypeChipIcon}>{roomType.icon}</Text>
+                                <Text style={styles.roomTypeChipText}>{roomType.name}</Text>
+                            </View>
+                            <View style={styles.roomTypeSqftChip}>
+                                <Text style={styles.roomTypeSqftText}>{roomType.sqft}</Text>
+                            </View>
+                        </View>
+                    )}
 
                     {/* Tabs */}
                     <View style={styles.tabsContainer}>
@@ -190,8 +204,7 @@ export default function BuildingDetailScreen({ route, navigation }: Props) {
                 </View>
 
                 {/* Action Buttons */}
-                <View style={styles.actionsContainer}>
-                    {/* View in 3D Button */}
+                {/* <View style={styles.actionsContainer}>
                     <TouchableOpacity style={styles.view3DButton} onPress={handleViewIn3D}>
                         <LinearGradient
                             colors={['#FF6200', '#FFC082', '#FF6200']}
@@ -204,12 +217,8 @@ export default function BuildingDetailScreen({ route, navigation }: Props) {
                             <Text style={styles.view3DText}>View in 3D</Text>
                         </View>
                     </TouchableOpacity>
+                </View> */}
 
-                    {/* View Room Types */}
-                    <TouchableOpacity style={styles.roomTypesButton} onPress={handleViewRoomTypes}>
-                        <Text style={styles.roomTypesArrow}>›</Text>
-                    </TouchableOpacity>
-                </View>
             </ScrollView>
 
             {/* AR Viewer Modal */}
@@ -496,6 +505,84 @@ const styles = StyleSheet.create({
     roomTypesArrow: {
         fontSize: 28,
         color: '#fff',
+        fontWeight: '300',
+    },
+
+    // Room Type Info
+    roomTypeInfoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 16,
+    },
+    roomTypeChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#E8E0D8',
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 20,
+        gap: 6,
+    },
+    roomTypeChipIcon: {
+        fontSize: 14,
+    },
+    roomTypeChipText: {
+        fontSize: scale(13),
+        fontWeight: '600',
+        color: '#2D2D2D',
+    },
+    roomTypeSqftChip: {
+        backgroundColor: '#E8E0D8',
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 20,
+    },
+    roomTypeSqftText: {
+        fontSize: scale(13),
+        fontWeight: '600',
+        color: '#555',
+    },
+
+    // Golden Visa Button
+    goldenVisaSection: {
+        paddingHorizontal: 24,
+        marginBottom: 20,
+    },
+    goldenVisaButton: {
+        borderRadius: 18,
+        padding: 18,
+        shadowColor: '#D4A847',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 8,
+    },
+    goldenVisaContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    goldenVisaEmoji: {
+        fontSize: 28,
+        marginRight: 14,
+    },
+    goldenVisaTextWrap: {
+        flex: 1,
+    },
+    goldenVisaTitle: {
+        fontSize: scale(16),
+        fontWeight: '800',
+        color: '#1a1510',
+        marginBottom: 2,
+    },
+    goldenVisaSubtitle: {
+        fontSize: scale(11),
+        color: 'rgba(26,21,16,0.6)',
+        fontWeight: '500',
+    },
+    goldenVisaArrow: {
+        fontSize: 32,
+        color: 'rgba(26,21,16,0.4)',
         fontWeight: '300',
     },
 });

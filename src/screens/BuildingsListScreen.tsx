@@ -29,7 +29,7 @@ export default function BuildingsListScreen({ navigation }: Props) {
     const insets = useSafeAreaInsets();
 
     const handleBuildingPress = (buildingId: number) => {
-        navigation.navigate('BuildingDetail', { buildingId });
+        navigation.navigate('RoomTypes', { buildingId });
     };
 
     const handleNext = () => {
@@ -75,8 +75,8 @@ export default function BuildingsListScreen({ navigation }: Props) {
 
                         {/* Price Tag */}
                         <View style={styles.priceRow}>
+                            <Text style={styles.priceLabel}>Starting from </Text>
                             <Text style={styles.priceText}>{item.price}</Text>
-                            <Text style={styles.priceUnit}>{item.priceUnit}</Text>
                         </View>
 
                         {/* Location */}
@@ -225,10 +225,9 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: '#fff',
     },
-    priceUnit: {
+    priceLabel: {
         fontSize: scale(14),
         color: 'rgba(255,255,255,0.6)',
-        marginLeft: 4,
     },
     locationRow: {
         flexDirection: 'row',
