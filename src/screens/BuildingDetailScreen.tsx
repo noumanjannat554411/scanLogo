@@ -58,7 +58,7 @@ export default function BuildingDetailScreen({ route, navigation }: Props) {
         );
     };
 
-    const tabs: Array<'Details' | 'Reviews' | 'Map'> = ['Details', 'Reviews', 'Map'];
+    const tabs: Array<'Details' | 'Reviews' | 'Map'> = ['Details'];
 
     return (
         <View style={styles.container}>
